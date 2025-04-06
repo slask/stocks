@@ -1,0 +1,87 @@
+@StocksAPI_HostAddress = http://localhost:5147
+
+POST {{StocksAPI_HostAddress}}/api/product
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Elite",
+  "category": "KnittingThreads"
+}
+
+###
+
+POST {{StocksAPI_HostAddress}}/api/product
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Perle",
+  "category": "KnittingThreads"
+}
+
+###
+
+POST {{StocksAPI_HostAddress}}/api/product/20284E02-F855-417B-88D2-B1703DE8E60D/colors
+Content-Type: application/json
+Accept: application/json
+
+{
+  "code": "RBLUE001",
+  "existingQuantity": 50
+}
+
+###
+
+GET {{StocksAPI_HostAddress}}/api/products
+Accept: application/json
+
+###
+
+# Get product without colors
+GET {{StocksAPI_HostAddress}}/api/product/20284E02-F855-417B-88D2-B1703DE8E60D
+Accept: application/json
+
+###
+
+# Get product with colors included
+GET {{StocksAPI_HostAddress}}/api/product/20284E02-F855-417B-88D2-B1703DE8E60D?includeColors=true
+Accept: application/json
+
+###
+
+# Delete a color from a product
+DELETE {{StocksAPI_HostAddress}}/api/product/20284E02-F855-417B-88D2-B1703DE8E60D/colors/7265A6A4-AFC3-4FFA-8457-BBC3B8444889
+Accept: application/json
+
+###
+
+# Delete a product
+DELETE {{StocksAPI_HostAddress}}/api/product/20284E02-F855-417B-88D2-B1703DE8E60D
+Accept: application/json
+
+###
+
+# Edit a product
+PUT {{StocksAPI_HostAddress}}/api/product/20284E02-F855-417B-88D2-B1703DE8E60D
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Elite Premium",
+  "category": "KnittingThreads"
+}
+
+###
+
+# Edit a product failure
+PUT {{StocksAPI_HostAddress}}/api/product/20284E02-F855-417B-88D2-B1703DE8E60D
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Perle",
+  "category": "KnittingThreads"
+}
+
+###
