@@ -8,7 +8,7 @@ public class ListProductsEndpoint(StocksDbContext db) : EndpointWithoutRequest<L
 {
     public override void Configure()
     {
-        Get("/api/products");
+        Get("products");
         AllowAnonymous(); // Adjust according to your authentication requirements
     }
 
