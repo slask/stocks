@@ -24,11 +24,11 @@ jobs:
         with:
           dotnet-version: '9.x'
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
+#      - name: Build with dotnet
+#        run: dotnet build --configuration Release --verbosity detailed
       
       - name: Publish Web App
-        run: dotnet publish StocksAPI.csproj --no-build --configuration Release --output ./publish
+        run: dotnet publish StocksAPI.csproj --configuration Release --output ./publish --verbosity detailed
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
