@@ -405,3 +405,5 @@ StocksAPI/StocksAPI/.DS_Store
 /StocksAPI/StocksAPI/wwwroot/*.*
 /StocksAPI/StocksAPI/wwwroot/assets/
 bla
+.github/workflows/.DS_Store
+.DS_Store
