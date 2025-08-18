@@ -17,5 +17,7 @@ Global
 		{A59360B0-7579-46C9-A0E2-27D07E30D842}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A59360B0-7579-46C9-A0E2-27D07E30D842}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A59360B0-7579-46C9-A0E2-27D07E30D842}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A59360B0-7579-46C9-A0E2-27D07E30D842}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{A59360B0-7579-46C9-A0E2-27D07E30D842}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
