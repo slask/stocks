@@ -400,3 +400,7 @@ FodyWeavers.xsd
 *.sln.iml
 StocksAPI/.idea
 StocksAPI/StocksAPI/client-app/.DS_Store
+StocksAPI/.DS_Store
+StocksAPI/StocksAPI/.DS_Store
+/StocksAPI/StocksAPI/wwwroot/*.*
+/StocksAPI/StocksAPI/wwwroot/assets/

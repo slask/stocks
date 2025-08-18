@@ -2,6 +2,11 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StocksAPI", "StocksAPI\StocksAPI.csproj", "{A59360B0-7579-46C9-A0E2-27D07E30D842}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipeline", "pipeline", "{A304965D-184E-4377-9EA1-FA05A41C4945}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\workflows\main_stocks.yml = ..\.github\workflows\main_stocks.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

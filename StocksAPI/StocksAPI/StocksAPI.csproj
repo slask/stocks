@@ -7,19 +7,58 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FastEndpoints" Version="5.35.0" />
+        <PackageReference Include="FastEndpoints" Version="5.35.0"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.3"/>
-        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="9.0.8" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.3" />
+        <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="9.0.8"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.3"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.3">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.3" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.3"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="client-app\" />
+        <Folder Include="client-app\"/>
+        <Folder Include="client-app\stocks\dist\" />
+        <Folder Include="wwwroot\" />
     </ItemGroup>
+
+    <ItemGroup>
+        <None Update="stocks.db">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\assets\index-Cmat8wZE.css" />
+      <_ContentIncludedByDefault Remove="wwwroot\assets\index-CY7xsHNe.js" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ClientDistFiles Include="client-app\stocks\dist\**\*.*" />
+    </ItemGroup>
+
+    <Target Name="CopySPAFilesToPublishFolder" AfterTargets="ComputeFilesToPublish">
+        <!-- Optionally build SPA here if needed, e.g. npm run build -->
+        <!-- Copy SPA dist files to wwwroot in publish directory -->
+        <Copy SourceFiles="@(ClientDistFiles)"
+              DestinationFiles="@(ClientDistFiles->'wwwroot\%(RecursiveDir)%(Filename)%(Extension)')" />
+    </Target>
+
+
+    
+    <Target Name="PublishSPA" AfterTargets="ComputeFilesToPublish">
+
+
+    <!-- Copy SPA build output into the publish folder -->
+    <ItemGroup>
+        <DistFiles Include="wwwroot\**\*.*" />
+        <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+            <RelativePath>%(DistFiles.Identity)</RelativePath>
+            <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+        </ResolvedFileToPublish>
+    </ItemGroup>
+    </Target>
 
 </Project>
