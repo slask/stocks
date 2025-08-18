@@ -23,11 +23,12 @@ var app = builder.Build();
 
 
 app.UseStaticFiles();
+app.UseSpaStaticFiles();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSpaStaticFiles();
-}
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseSpaStaticFiles();
+// }
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -36,26 +37,41 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseRouting();
 app.UseFastEndpoints(c =>
 {
     c.Serializer.Options.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
     c.Endpoints.RoutePrefix = "api";
 });
+app.UseEndpoints(_ => { });
 
-app.UseWhen(
-    context => !context.Request.Path.StartsWithSegments("/api"),
-    appBuilder =>
+app.UseSpa(spa =>
+{
+    spa.Options.SourcePath = "client-app/stocks";
+    if (app.Environment.IsDevelopment())
     {
-       appBuilder.UseSpaStaticFiles();
-        appBuilder.UseSpa(spa =>
-        {
-            spa.Options.SourcePath = "client-app/stocks/dist";
-            if (app.Environment.IsDevelopment())
-            {
-                spa.UseProxyToSpaDevelopmentServer("http://localhost:5173");
-            }
-        });
-    });
+        spa.UseProxyToSpaDevelopmentServer("http://localhost:5173");
+    }
+    else
+    {
+       // spa.Options.DefaultPage = "/site/wwwroot/wwwroot/index.html";
+    }
+});
+//
+// app.UseWhen(
+//     context => !context.Request.Path.StartsWithSegments("/api"),
+//     appBuilder =>
+//     {
+//         appBuilder.UseSpaStaticFiles();
+//         appBuilder.UseSpa(spa =>
+//         {
+//             spa.Options.DefaultPage= "/wwwroot/wwwroot/index.html";
+//             spa.Options.SourcePath = "client-app/stocks/dist";
+//             if (app.Environment.IsDevelopment())
+//             {
+//                 spa.UseProxyToSpaDevelopmentServer("http://localhost:5173");
+//             }
+//         });
+//     });
 
 app.Run();
