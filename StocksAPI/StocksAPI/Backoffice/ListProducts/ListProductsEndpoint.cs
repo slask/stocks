@@ -12,7 +12,7 @@ public class ListProductsEndpoint(StocksDbContext db) : EndpointWithoutRequest<L
         AllowAnonymous(); // Adjust according to your authentication requirements
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
+    public async override Task HandleAsync(CancellationToken ct)
     {
         var products = await db.Products
             .Include(p => p.Colors).ToListAsync(cancellationToken: ct);

@@ -19,6 +19,14 @@ builder.Services.AddDbContext<StocksDbContext>(options =>
 
 builder.Services.AddSpaStaticFiles(options => { options.RootPath = "client-app/stocks/dist"; });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        bld => bld.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
+});
+
 var app = builder.Build();
 
 app.UseDeveloperExceptionPage();
@@ -30,6 +38,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAllOrigins");
 
 app.UseFastEndpoints(c =>
 {
