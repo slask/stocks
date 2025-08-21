@@ -84,8 +84,7 @@ const headers = [
     title: 'Stock Count',
     key: 'stockCount',
     sortable: true,
-    align: 'end',
-    width: '130px'
+    width: '100px'
   },
   {
     title: 'Actions',
@@ -132,9 +131,9 @@ const fetchProducts = async () => {
 }
 
 const getStockStatus = (stockCount: number) => {
-  if (stockCount === 0) return { color: 'red', text: 'Out of Stock' }
+  if (stockCount === 0) return { color: '#EB0E0E', text: 'Out of Stock' }
   if (stockCount < 10) return { color: 'orange', text: 'Low Stock' }
-  return { color: 'green', text: 'In Stock' }
+  return { color: '#21603D', text: 'In Stock' }
 }
 
 const openAddDialog = () => {
@@ -240,7 +239,7 @@ const saveColor = async () => {
 
 const showNotification = (message: string, color: 'success' | 'error') => {
   snackbarText.value = message
-  snackbarColor.value = color
+  snackbarColor.value = color ==='error'? '#EB0E0E' : '#21603D'
   snackbar.value = true
 }
 
@@ -383,7 +382,7 @@ onMounted(() => {
               Add Product
             </v-btn>
             <v-btn 
-              color="secondary" 
+              color="#DCC0A1" 
               prepend-icon="mdi-palette"
               variant="elevated"
               @click="openAddColorDialog"
@@ -440,10 +439,10 @@ onMounted(() => {
               <!-- Color code slot with color chip -->
               <template v-slot:item.colorCode="{ item }">
                 <v-chip
-                  :color="item.colorCode"
+                  color="#C6C6C6"
                   size="small"
                   variant="elevated"
-                  class="text-white"
+                  class="text-black"
                 >
                   {{ item.colorCode }}
                 </v-chip>
@@ -452,13 +451,13 @@ onMounted(() => {
               <!-- Stock count slot with status indicator -->
               <template v-slot:item.stockCount="{ item }">
                 <div class="d-flex align-center">
-                  <span class="me-2">{{ item.stockCount }}</span>
+                 
                   <v-chip
                     :color="getStockStatus(item.stockCount).color"
                     size="x-small"
+                    :text="item.stockCount"
                     variant="elevated"
                   >
-                    {{ getStockStatus(item.stockCount).text }}
                   </v-chip>
                 </div>
               </template>
@@ -469,7 +468,7 @@ onMounted(() => {
                   icon="mdi-pencil"
                   size="small"
                   variant="text"
-                  color="primary"
+                  color="#1CB8E8"
                   @click="openEditDialog(item)"
                 >
                 </v-btn>
@@ -477,7 +476,7 @@ onMounted(() => {
                   icon="mdi-delete"
                   size="small"
                   variant="text"
-                  color="error"
+                  color="#EB0E0E"
                   @click="deleteProduct(item)"
                 >
                 </v-btn>
@@ -550,7 +549,7 @@ onMounted(() => {
             Cancel
           </v-btn>
           <v-btn
-            color="primary"
+            color="#021828"
             variant="elevated"
             @click="saveProduct"
             :loading="saving"
@@ -597,7 +596,7 @@ onMounted(() => {
                 <v-text-field
                   v-model="newColor.colorCode"
                   label="Color Code"
-                  placeholder="e.g., #FF5722 or blue"
+                  placeholder="Enter catalog color code"
                   variant="outlined"
                   :rules="colorRules"
                   required
@@ -628,7 +627,7 @@ onMounted(() => {
             Close
           </v-btn>
           <v-btn
-            color="secondary"
+            color="#DCC0A1"
             variant="elevated"
             @click="saveColor"
             :loading="savingColor"
@@ -695,7 +694,7 @@ onMounted(() => {
             Cancel
           </v-btn>
           <v-btn
-            color="primary"
+            color="#021828"
             variant="elevated"
             @click="updateProduct"
             :loading="savingEdit"
@@ -711,7 +710,7 @@ onMounted(() => {
     <v-dialog v-model="deleteDialog" max-width="500px" persistent>
       <v-card>
         <v-card-title class="d-flex align-center">
-          <v-icon icon="mdi-delete" class="me-3" color="error"></v-icon>
+          <v-icon icon="mdi-delete" class="me-3" color="#EB0E0E"></v-icon>
           <span class="text-h5">{{ getDeleteTitle() }}</span>
           <v-spacer></v-spacer>
           <v-btn
@@ -748,7 +747,7 @@ onMounted(() => {
             Cancel
           </v-btn>
           <v-btn
-            color="error"
+            color="#EB0E0E"
             variant="elevated"
             @click="confirmDelete"
             :loading="deleting"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import { ref, watch, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 
  const drawer = ref(false)
 const group = ref(null)
@@ -20,8 +20,7 @@ const isHomePage = computed(() => route.path === '/')
   <v-app >
       <v-app-bar elevation="5" color="#021828">
         <v-app-bar-nav-icon variant="text" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-       
-       <v-app-bar-title>TTH Stocks</v-app-bar-title>
+       <v-app-bar-title>Stocks</v-app-bar-title>
         <v-spacer></v-spacer>
            <!-- Logo - only show when not on home page -->
         <img 
