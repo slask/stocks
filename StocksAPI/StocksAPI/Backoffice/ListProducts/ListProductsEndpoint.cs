@@ -20,6 +20,7 @@ public class ListProductsEndpoint(StocksDbContext db) : EndpointWithoutRequest<L
             ? product.Colors.Select(color => new ProductItem
             {
                 ProductId = product.Id,
+                ColorId = color.Id,
                 ProductName = product.Name,
                 Category = product.Category.ToString(),
                 ColorCode = color.Code,
@@ -29,6 +30,7 @@ public class ListProductsEndpoint(StocksDbContext db) : EndpointWithoutRequest<L
             {
                 new()
                 {
+                    ColorId = null,
                     ProductId = product.Id,
                     ProductName = product.Name,
                     Category = product.Category.ToString(),

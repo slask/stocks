@@ -8,11 +8,11 @@ public class GetProductEndpoint(StocksDbContext db) : Endpoint<GetProductRequest
 {
     public override void Configure()
     {
-        Get("/api/product/{Id}");
+        Get("/product/{Id}");
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(GetProductRequest req, CancellationToken ct)
+    public async override Task HandleAsync(GetProductRequest req, CancellationToken ct)
     {
         var query = db.Products.AsQueryable();
         

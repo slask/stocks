@@ -1,12 +1,13 @@
+export const ProductType = {
+    KnittingThreads: 'KnittingThreads',
+    Zippers: 'Zippers',
+    SewingThreads: 'SewingThreads',
+    Ribbons: 'Ribbons',
+    Buttons: 'Buttons',
+    Laces: 'Laces'
+} as const;
 
-enum ProductType {
-    KnittingThreads = 'KnittingThreads',
-    Zippers = 'Zippers',
-    SewingThreads = 'SewingThreads',
-    Ribbons = 'Ribbons',
-    Buttons = 'Buttons',
-    Laces = 'Laces'
-}
+export type ProductType = typeof ProductType[keyof typeof ProductType];
 
 export const getProductTypeDisplayName = (type: ProductType): string => {
     const displayNames: Record<ProductType, string> = {
@@ -19,5 +20,3 @@ export const getProductTypeDisplayName = (type: ProductType): string => {
     };
     return displayNames[type];
 };
-
-export { ProductType };

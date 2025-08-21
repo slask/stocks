@@ -8,11 +8,11 @@ public class DeleteProductEndpoint(StocksDbContext db) : EndpointWithoutRequest
 {
     public override void Configure()
     {
-        Delete("/api/product/{id}");
+        Delete("/product/{id}");
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
+    public async override Task HandleAsync(CancellationToken ct)
     {
         var id = Route<Guid>("id");
 

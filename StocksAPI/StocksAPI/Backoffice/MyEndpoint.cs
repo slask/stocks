@@ -10,7 +10,7 @@ public class MyEndpoint : Endpoint<MyRequest, MyResponse>
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(MyRequest req, CancellationToken ct)
+    public async override Task HandleAsync(MyRequest req, CancellationToken ct)
     {
         await SendAsync(new()
         {

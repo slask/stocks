@@ -8,11 +8,11 @@ public class EditProductEndpoint(StocksDbContext db) : Endpoint<EditProductReque
 {
     public override void Configure()
     {
-        Put("/api/product/{Id}");
+        Put("/product/{Id}");
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(EditProductRequest req, CancellationToken ct)
+    public async override Task HandleAsync(EditProductRequest req, CancellationToken ct)
     {
         var product = await db.Products
             .FirstOrDefaultAsync(p => p.Id == req.Id, ct);

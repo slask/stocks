@@ -22,7 +22,7 @@ public class EditProductValidator : Validator<EditProductRequest>
             {
                 var db = Resolve<StocksDbContext>();
                 return !await db.Products
-                    .AnyAsync(p => p.Name == name && p.Id != request.Id, ct);
+                    .AnyAsync(p => p.Name.ToLower() == name.ToLower() && p.Id != request.Id, ct);
             })
             .WithMessage("A product with this name already exists");
 

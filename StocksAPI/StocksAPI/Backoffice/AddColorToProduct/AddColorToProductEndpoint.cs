@@ -10,11 +10,11 @@ public class AddColorToProductEndpoint(StocksDbContext db)
 {
     public override void Configure()
     {
-        Post("/api/product/{productId}/colors");
+        Post("/product/{productId}/colors");
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(AddColorToProductRequest req, CancellationToken ct)
+    public async override Task HandleAsync(AddColorToProductRequest req, CancellationToken ct)
     {
         // Find the product
         var product = await db.Products

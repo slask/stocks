@@ -8,11 +8,11 @@ public class DeleteColorEndpoint(StocksDbContext db) : Endpoint<DeleteColorReque
 {
     public override void Configure()
     {
-        Delete("/api/product/{ProductId}/colors/{ColorId}");
+        Delete("/product/{ProductId}/colors/{ColorId}");
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(DeleteColorRequest req, CancellationToken ct)
+    public async override Task HandleAsync(DeleteColorRequest req, CancellationToken ct)
     {
         var product = await db.Products
             .Include(p => p.Colors)

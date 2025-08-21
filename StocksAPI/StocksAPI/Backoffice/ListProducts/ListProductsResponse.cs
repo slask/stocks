@@ -8,8 +8,9 @@ public class ListProductsResponse
 public class ProductItem
 {
     public Guid ProductId { get; set; }
+    public Guid? ColorId { get; set; }
     public string ProductName { get; set; }
     public string Category { get; set; }
-    public string ColorCode { get; set; }
+    public string? ColorCode { get; set; }
     public int StockCount { get; set; }
 }

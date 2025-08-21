@@ -9,11 +9,11 @@ public class CreateProductEndpoint(StocksDbContext db) : Endpoint<CreateProductR
 {
     public override void Configure()
     {
-        Post("/api/product");
+        Post("/product");
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(CreateProductRequest req, CancellationToken ct)
+    public async override Task HandleAsync(CreateProductRequest req, CancellationToken ct)
     {
         // Check if a product with the same name already exists
         var productExists = await db.Products
