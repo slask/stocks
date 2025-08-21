@@ -1,14 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
-
-interface ProductItem {
-  productId: string
-  productName: string
-  category: string
-  colorCode: string
-  stockCount: number
-}
+import ProductItem from '@/models/ProductItem'
 
 const products = ref<ProductItem[]>([])
 const loading = ref(false)
