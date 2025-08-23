@@ -176,7 +176,7 @@ const saveProduct = async () => {
       name: newProduct.value.productName,
       category: newProduct.value.category,
     })
-    console.log('Save Product response:', response)
+    console.log('Save Product response:', response.data)
     showNotification('Product saved successfully!', 'success')
     closeDialog()
     
@@ -216,7 +216,7 @@ const saveColor = async () => {
         existingQuantity: newColor.value.stockCount
       }
     )
-    console.log('Save Color variant response:', response)
+    console.log('Save Color variant response:', response.data)
     showNotification('Color variant saved successfully!', 'success')
     
     // Clear only color and stock fields, keep product selected
@@ -317,7 +317,7 @@ const confirmDelete = async () => {
       response = await axios.delete(`${import.meta.env.VITE_API_URL}/api/product/${product.productId}`)
       showNotification('Product deleted successfully!', 'success')
     }
-    console.log('Delete response:', response)
+    console.log('Delete response:', response.data)
     closeDeleteDialog()
     
     // Refresh the list
