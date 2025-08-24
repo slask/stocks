@@ -85,3 +85,82 @@ Accept: application/json
 }
 
 ###
+
+# Create a new order
+POST {{StocksAPI_HostAddress}}/api/orders
+Content-Type: application/json
+Accept: application/json
+
+{
+	"clientName": "John Doe",
+	"items": [
+		{
+			"productId": "prod-123",
+			"colorId": "color-456",
+			"productName": "Cotton Sewing Thread",
+			"category": "SewingThreads",
+			"colorCode": "#FF0000",
+			"quantity": 5
+		},
+		{
+			"productId": "prod-789",
+			"colorId": "color-012",
+			"productName": "Wool Knitting Thread",
+			"category": "KnittingThreads",
+			"colorCode": "#00FF00",
+			"quantity": 3
+		},
+		{
+			"productId": "prod-345",
+			"colorId": "color-678",
+			"productName": "Silk Ribbon",
+			"category": "Ribbons",
+			"colorCode": "#0000FF",
+			"quantity": 10
+		}
+	]
+}
+
+###
+
+# Create an order with validation errors (empty client name)
+POST {{StocksAPI_HostAddress}}/api/orders
+Content-Type: application/json
+Accept: application/json
+
+{
+	"clientName": "",
+	"items": [
+		{
+			"productId": "prod-123",
+			"colorId": "color-456",
+			"productName": "Cotton Thread",
+			"category": "SewingThreads",
+			"colorCode": "#FF0000",
+			"quantity": 0
+		}
+	]
+}
+
+###
+
+# Create an order with invalid category
+POST {{StocksAPI_HostAddress}}/api/orders
+Content-Type: application/json
+Accept: application/json
+
+{
+	"clientName": "Jane Smith",
+	"items": [
+		{
+			"productId": "prod-123",
+			"colorId": "color-456",
+			"productName": "Cotton Thread",
+			"category": "InvalidCategory",
+			"colorCode": "#FF0000",
+			"quantity": 2
+		}
+	]
+}
+
+###

@@ -19,6 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Folder Include="Backoffice\SaveOrder\" />
         <Folder Include="client-app\"/>
         <Folder Include="client-app\stocks\dist\" />
         <Folder Include="wwwroot\" />

@@ -3,15 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import type ProductItem from '../models/ProductItem'
 import { ProductType, getProductTypeDisplayName } from '../models/ProductType'
-
-interface OrderItem {
-  productId: string
-  colorId: string
-  productName: string
-  category: ProductType
-  colorCode: string
-  quantity: number
-}
+import type OrderItem from '../models/OrderItem'
 
 const products = ref<ProductItem[]>([])
 const loading = ref(false)
@@ -21,7 +13,8 @@ const orderItems = ref<OrderItem[]>([])
 const quantities = ref<Record<string, number>>({})
 const drawerOpen = ref(true)
 const clearOrderDialog = ref(false)
-
+const finalizeOrderDialog = ref(false)
+const finalizingOrder = ref(false)
 const clientName = ref('')
 const clientNameDialog = ref(false)
 const savingClientName = ref(false)
@@ -144,11 +137,6 @@ const getStockStatus = (stockCount: number) => {
   return { color: '#21603D', text: 'In Stock' }
 }
 
-// const openOrder = async () => {
-//   showProducts.value = true
-//   await fetchProducts()
-//   loadOrderFromStorage()
-// }
 
 const openOrder = async () => {
   clientNameDialog.value = true
@@ -273,6 +261,41 @@ const showNotification = (message: string, color: 'success' | 'error') => {
   snackbar.value = true
 }
 
+const openFinalizeOrderDialog = () => {
+  finalizeOrderDialog.value = true
+}
+
+const confirmFinalizeOrder = async () => {
+  finalizingOrder.value = true
+  
+  try {
+ 
+    const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/orders`, {
+      clientName: clientName.value,
+      items: orderItems.value
+    })
+    
+    // For now, just clear the order and show success
+    orderItems.value = []
+    clientName.value = ''
+    localStorage.removeItem('currentOrder')
+    finalizeOrderDialog.value = false
+    showProducts.value = false
+    
+    showNotification('Order finalized successfully! Stock quantities have been updated.', 'success')
+  } catch (error: any) {
+    const errorMessage = error.response?.data?.message || error.message || 'Failed to finalize order'
+    showNotification(`Error: ${errorMessage}`, 'error')
+    console.error('Error finalizing order:', error)
+  } finally {
+    finalizingOrder.value = false
+  }
+}
+
+const closeFinalizeOrderDialog = () => {
+  finalizeOrderDialog.value = false
+}
+
 // Custom search function for multi-word search
 const customSearch = (value: any, query: string, item?: any) => {
   
@@ -287,6 +310,12 @@ const customSearch = (value: any, query: string, item?: any) => {
 
 onMounted(() => {
   loadOrderFromStorage()
+  
+  // If there's an existing order, show the products view
+  if (clientName.value) {
+    showProducts.value = true
+    fetchProducts()
+  }
 })
 </script>
 
@@ -297,7 +326,12 @@ onMounted(() => {
         <v-card>
           <v-card-title class="d-flex align-center pe-2">
             <v-icon icon="mdi-clipboard-list" class="me-3"></v-icon>
-            <span class="text-h5">Orders Management</span>
+            <div class="flex-grow-1">
+    <span class="text-h5">Orders Management</span>
+    <div v-if="showProducts && clientName" class="text-caption text-grey-darken-1">
+      Client: {{ clientName }}
+    </div>
+  </div>
             <v-spacer></v-spacer>
             <v-btn 
               v-if="!showProducts"
@@ -520,6 +554,65 @@ onMounted(() => {
   </v-card>
 </v-dialog>
 
+<!-- Finalize Order Confirmation Dialog -->
+<v-dialog v-model="finalizeOrderDialog" max-width="600px" persistent>
+  <v-card>
+    <v-card-title class="d-flex align-center">
+      <v-icon icon="mdi-check-circle" class="me-3" color="success"></v-icon>
+      <span class="text-h5">Finalize Order</span>
+    </v-card-title>
+    
+    <v-divider></v-divider>
+    
+    <v-card-text class="pt-6">
+      <div class="text-body-1 mb-4">
+        <strong>Please review your order carefully before finalizing:</strong>
+      </div>
+      
+      <v-card variant="outlined" class="mb-4">
+        <v-card-text>
+          <div class="text-subtitle-1 mb-2"><strong>Client:</strong> {{ clientName }}</div>
+          <div class="text-subtitle-1 mb-2"><strong>Total Items:</strong> {{ totalItems }}</div>
+          <div class="text-subtitle-1"><strong>Unique Products:</strong> {{ totalUniqueProducts }}</div>
+        </v-card-text>
+      </v-card>
+      
+      <v-alert 
+        type="warning" 
+        variant="tonal"
+        class="mb-4"
+      >
+        <strong>Important:</strong> After submitting this order, the quantities will be automatically deducted from stock and this action cannot be undone.
+      </v-alert>
+      
+      <div class="text-body-2 text-grey-darken-1">
+        Are you sure you want to finalize this order?
+      </div>
+    </v-card-text>
+    
+    <v-card-actions class="px-6 pb-6">
+      <v-spacer></v-spacer>
+      <v-btn
+        variant="outlined"
+        @click="closeFinalizeOrderDialog"
+        :disabled="finalizingOrder"
+      >
+        Cancel
+      </v-btn>
+      <v-btn
+        color="#021828"
+        variant="elevated"
+        class="text-white"
+        @click="confirmFinalizeOrder"
+        :loading="finalizingOrder"
+        :disabled="finalizingOrder"
+      >
+        Finalize Order
+      </v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
+
     <!-- Order Items Drawer -->
     <v-navigation-drawer
       v-model="drawerOpen"
@@ -535,8 +628,7 @@ onMounted(() => {
     <span class="text-h6">Current Order</span>
     <div class="text-caption text-grey-darken-1">Client: {{ clientName }}</div>
   </div>
-  <v-spacer></v-spacer>
-  <div class="d-flex gap-2">
+  <div class="d-flex gap-2 me-3">
     <v-chip color="#021828" variant="elevated" class="text-white">
       {{ totalItems }} items
     </v-chip>
@@ -544,6 +636,13 @@ onMounted(() => {
       {{ totalUniqueProducts }} products
     </v-chip>
   </div>
+  <v-btn
+    icon="mdi-chevron-right"
+    variant="text"
+    size="small"
+    @click="drawerOpen = false"
+  >
+  </v-btn>
 </v-card-title>
         
         <v-divider></v-divider>
@@ -600,6 +699,16 @@ onMounted(() => {
     :disabled="orderItems.length === 0"
   >
     Clear Order
+  </v-btn>
+  <v-btn
+    color="#021828"
+    prepend-icon="mdi-check"
+    variant="elevated"
+    class="text-white me-2"
+    @click="openFinalizeOrderDialog"
+    :disabled="orderItems.length === 0"
+  >
+    Finalize Order
   </v-btn>
 </v-card-actions>
       </v-card>
