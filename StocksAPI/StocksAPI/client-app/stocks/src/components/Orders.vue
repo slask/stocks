@@ -274,7 +274,8 @@ const confirmFinalizeOrder = async () => {
       clientName: clientName.value,
       items: orderItems.value
     })
-    
+    console.log('Finalize Order response:', response.data)
+
     // For now, just clear the order and show success
     orderItems.value = []
     clientName.value = ''

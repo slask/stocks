@@ -233,7 +233,7 @@ const saveColor = async () => {
     newColor.value = {
       productId: newColor.value.productId, // Keep the selected product
       colorCode: '',
-      stockCount: 0
+      stockCount: null
     }
     
     // Refresh the list
