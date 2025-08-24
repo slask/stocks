@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import { ref, watch, computed } from 'vue'
-import { RouterLink, useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 
  const drawer = ref(false)
 const group = ref(null)
