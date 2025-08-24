@@ -629,7 +629,7 @@ onMounted(() => {
     <div class="text-caption text-grey-darken-1">Client: {{ clientName }}</div>
   </div>
   <div class="d-flex gap-2 me-3">
-    <v-chip color="#021828" variant="elevated" class="text-white">
+    <v-chip color="#021828" variant="elevated" class="text-white mr-2">
       {{ totalItems }} items
     </v-chip>
     <v-chip color="#DCC0A1" variant="elevated" class="text-black">

@@ -368,28 +368,35 @@ onMounted(() => {
     <v-row>
       <v-col cols="12">
         <v-card>
-          <v-card-title class="d-flex align-center pe-2">
-            <v-icon icon="mdi-package-variant" class="me-3"></v-icon>
-            <span class="text-h5">Product Management</span>
-            <v-spacer></v-spacer>
-            <v-btn 
-              color="#021828" 
-              prepend-icon="mdi-plus"
-              variant="elevated"
-              @click="openAddDialog"
-              class="me-2"
-            >
-              Add Product
-            </v-btn>
-            <v-btn 
-              color="#DCC0A1" 
-              prepend-icon="mdi-palette"
-              variant="elevated"
-              @click="openAddColorDialog"
-            >
-              Add Color
-            </v-btn>
-          </v-card-title>
+        <v-card-title class="d-flex align-center pe-2 flex-wrap">
+  <v-icon icon="mdi-package-variant" class="me-3"></v-icon>
+  <span class="text-h5 flex-grow-1">Product Management</span>
+  
+  <div class="d-flex flex-wrap gap-3 mt-2 mt-sm-0">
+    <v-btn 
+      color="#021828" 
+      prepend-icon="mdi-plus"
+      variant="elevated"
+      @click="openAddDialog"
+      size="small"
+      class="flex-shrink-0 mr-5"
+    >
+      Add Product
+    </v-btn>
+
+    <v-btn 
+      color="#DCC0A1" 
+      prepend-icon="mdi-palette"
+      variant="elevated"
+      @click="openAddColorDialog"
+      size="small"
+      class="flex-shrink-0"
+    >
+      Add Color
+    </v-btn>
+  </div>
+</v-card-title>
+
           
           <v-divider></v-divider>
           
