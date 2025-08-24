@@ -29,13 +29,17 @@ const newProduct = ref({
 const newColor = ref({
   productId: '',
   colorCode: '',
-  stockCount: 0
+  stockCount: null
 })
 
 const editProduct = ref({
   id: '',
   name: '',
   category: ProductType.KnittingThreads as ProductType,
+  colorId: '',
+  quantityToAdd: null,
+  hasColor: false,
+  currentStock: 0
 })
 
 // Form validation rules
@@ -50,11 +54,17 @@ const colorRules = [
 ]
 
 const stockRules = [
-  (v: number) => v >= 0 || 'Stock count must be 0 or greater'
+  (v: number | null) => v !== null && v !== undefined || 'Stock count is required',
+  (v: number | null) => v === null || v >= 0 || 'Stock count must be 0 or greater'
 ]
 
 const productSelectRules = [
   (v: string) => !!v || 'Please select a product'
+]
+
+const quantityRules = [
+  (v: number | null) => v !== null && v !== undefined || 'Quantity is required',
+  (v: number | null) => v=== null ||Number.isInteger(v) || 'Quantity must be a whole number'
 ]
 
 // Notification state
@@ -132,7 +142,7 @@ const fetchProducts = async () => {
 
 const getStockStatus = (stockCount: number) => {
   if (stockCount === 0) return { color: '#EB0E0E', text: 'Out of Stock' }
-  if (stockCount < 10) return { color: 'orange', text: 'Low Stock' }
+  if (stockCount < 50) return { color: 'orange', text: 'Low Stock' }
   return { color: '#21603D', text: 'In Stock' }
 }
 
@@ -150,7 +160,7 @@ const openAddColorDialog = () => {
   newColor.value = {
     productId: '',
     colorCode: '',
-    stockCount: 0
+    stockCount: null
   }
   colorDialog.value = true
 }
@@ -203,7 +213,7 @@ const saveColor = async () => {
     return
   }
 
-  if (newColor.value.stockCount < 0) {
+  if (newColor.value.stockCount === null || newColor.value.stockCount < 0) {
     showNotification('Stock count must be 0 or greater', 'error')
     return
   }
@@ -244,11 +254,17 @@ const showNotification = (message: string, color: 'success' | 'error') => {
 }
 
 const openEditDialog = (product: ProductItem) => {
+  const hasColor = itemHasColor(product)
+  
   // Set form data from selected product
   editProduct.value = {
     id: product.productId,
     name: product.productName,
     category: product.category as ProductType,
+    colorId: hasColor ? product.colorId : '',
+    quantityToAdd: null,
+    hasColor: hasColor,
+    currentStock: product.stockCount
   }
   editDialog.value = true
 }
@@ -264,12 +280,26 @@ const updateProduct = async () => {
     return
   }
 
+  // Validate quantity if product has color
+  if (editProduct.value.hasColor && (editProduct.value.quantityToAdd === null || editProduct.value.quantityToAdd === undefined)) {
+    showNotification('Please enter a quantity to add/remove', 'error')
+    return
+  }
+
   savingEdit.value = true
   try {
-    const response = await axios.put(`${import.meta.env.VITE_API_URL}/api/product/${editProduct.value.id}`, {
+ const requestData: any = {
       name: editProduct.value.name,
       category: editProduct.value.category,
-    })
+    }
+
+    // Add color-related fields if product has color
+    if (editProduct.value.hasColor) {
+      requestData.colorId = editProduct.value.colorId
+      requestData.quantityToAdd = editProduct.value.quantityToAdd
+    }
+
+    const response = await axios.put(`${import.meta.env.VITE_API_URL}/api/product/${editProduct.value.id}`, requestData)
     console.log('Update response:', response)
     showNotification('Product updated successfully!', 'success')
     closeEditDialog()
@@ -354,8 +384,8 @@ const getDeleteTitle = () => {
   return hasColor ? 'Delete Color Variant' : 'Delete Product'
 }
 
-const itemHasColor = (product: ProductItem) => {
-  return product.colorCode && product.colorCode.trim() !== '' && product.colorId;
+const itemHasColor = (product: ProductItem) : boolean => {
+  return !!(product.colorCode && product.colorCode.trim() !== '' && product.colorId);
 }
 
 onMounted(() => {
@@ -618,6 +648,7 @@ onMounted(() => {
                   :rules="stockRules"
                   :min=0
                   :step=1
+                  placeholder="Enter initial stock count"
                 ></v-number-input>
               </v-col>
             </v-row>
@@ -687,6 +718,24 @@ onMounted(() => {
                   required
                 ></v-select>
               </v-col>
+
+                <!-- Stock Adjustment Field - only show if product has color -->
+          <v-col v-if="editProduct.hasColor" cols="12">
+            <v-alert type="info" variant="tonal" class="mb-4">
+              <strong>Current Stock:</strong> {{ editProduct.currentStock }} items
+            </v-alert>
+            
+            <v-number-input
+              v-model="editProduct.quantityToAdd"
+              label="Quantity to Add/Remove"
+              placeholder="Enter quantity to add (negative to remove)"
+              variant="outlined"
+              :rules="quantityRules"
+              :step=1
+              hint="Use negative values to remove stock (e.g., -5 to remove 5 items)"
+              persistent-hint
+            ></v-number-input>
+          </v-col>
             </v-row>
           </v-form>
         </v-card-text>

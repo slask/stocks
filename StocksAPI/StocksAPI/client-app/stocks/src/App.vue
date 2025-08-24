@@ -20,7 +20,11 @@ const isHomePage = computed(() => route.path === '/')
   <v-app >
       <v-app-bar elevation="5" color="#021828">
         <v-app-bar-nav-icon variant="text" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-       <v-app-bar-title>Stocks</v-app-bar-title>
+       <v-app-bar-title> 
+         <router-link to="/" class="title-link">
+    Stocks
+  </router-link>
+</v-app-bar-title>
         <v-spacer></v-spacer>
            <!-- Logo - only show when not on home page -->
         <img 
@@ -53,5 +57,15 @@ const isHomePage = computed(() => route.path === '/')
   height: 40px;
   width: auto;
   object-fit: contain;
+}
+
+.title-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.title-link:hover {
+  opacity: 0.8;
 }
 </style>
