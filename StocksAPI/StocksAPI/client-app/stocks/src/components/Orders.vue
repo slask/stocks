@@ -248,6 +248,7 @@ const confirmClearOrder = () => {
   clientName.value = ''
   localStorage.removeItem('currentOrder')
   clearOrderDialog.value = false
+  showProducts.value = false
   showNotification('Order cleared', 'success')
 }
 
