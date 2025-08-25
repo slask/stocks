@@ -89,7 +89,7 @@ public class SaveOrderEndpoint(StocksDbContext db, ILogger<SaveOrderEndpoint> lo
             // Check if there's sufficient stock
             if (color.StockCount < quantity)
             {
-                logger.LogWarning($"Insufficient stock for {product.Name} (Color: {color.Code}). Available: {color.StockCount}, Requested: {quantity}");
+                logger.LogWarning("Insufficient stock for {ProductName} (Color: {ColorCode}). Available: {ColorStockCount}, Requested: {Quantity}", product.Name, color.Code, color.StockCount, quantity);
                 color.StockCount = 0;
             }
             else

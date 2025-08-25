@@ -570,6 +570,13 @@ onMounted(() => {
     <v-card-actions class="px-6 pb-6">
       <v-spacer></v-spacer>
       <v-btn
+    variant="outlined"
+    @click="clientNameDialog = false"
+    :disabled="savingClientName"
+  >
+    Cancel
+  </v-btn>
+      <v-btn
         color="#021828"
         variant="elevated"
         @click="confirmClientName"
