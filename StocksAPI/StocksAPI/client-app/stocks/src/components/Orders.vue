@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { ref, onMounted, computed } from 'vue'
-  import { apiGet, apiPost } from '../api'
+  import { useApi } from '../api'
   import * as XLSX from 'xlsx'
   import type ProductItem from '../models/ProductItem'
   import { ProductType, getProductTypeDisplayName } from '../models/ProductType'
@@ -19,6 +19,8 @@
   const clientName = ref('')
   const clientNameDialog = ref(false)
   const savingClientName = ref(false)
+
+  const { apiGet, apiPost } = useApi()
 
   // Client name validation rules
   const clientNameRules = [
@@ -123,8 +125,12 @@
     try {
       const response = await apiGet('/api/products')
       products.value = response.data.items as ProductItem[]
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching products:', error)
+      if (error.response?.status === 403) {
+        showNotification('You do not have permission to view products.', 'error')
+        return
+      }
       showNotification('Failed to load products', 'error')
     } finally {
       loading.value = false
@@ -133,7 +139,7 @@
 
   const getStockStatus = (stockCount: number) => {
     if (stockCount === 0) return { color: '#EB0E0E', text: 'Out of Stock' }
-    if (stockCount < 10) return { color: 'orange', text: 'Low Stock' }
+    if (stockCount < 50) return { color: 'orange', text: 'Low Stock' }
     return { color: '#21603D', text: 'In Stock' }
   }
 
@@ -274,21 +280,23 @@
       })
       console.log('Finalize Order response:', response.data)
 
-      // Generate and download Excel file
       generateExcelFile()
 
-      // For now, just clear the order and show success
       orderItems.value = []
       clientName.value = ''
       localStorage.removeItem('currentOrder')
       finalizeOrderDialog.value = false
       showProducts.value = false
 
-      showNotification('Order finalized successfully! Stock quantities have been updated.', 'success')
+      showNotification('Order finalized successfully! Excel file downloaded.', 'success')
     } catch (error: any) {
+      console.error('Error finalizing order:', error)
+      if (error.response?.status === 403) {
+        showNotification('You do not have permission to finalize orders.', 'error')
+        return
+      }
       const errorMessage = error.response?.data?.message || error.message || 'Failed to finalize order'
       showNotification(`Error: ${errorMessage}`, 'error')
-      console.error('Error finalizing order:', error)
     } finally {
       finalizingOrder.value = false
     }
@@ -540,7 +548,7 @@
         <v-divider></v-divider>
 
         <v-card-text class="pt-6">
-          <v-form>
+          <v-form @submit.prevent="confirmClientName">
             <v-text-field
               v-model="clientName"
               label="Client Name"
@@ -549,6 +557,7 @@
               :rules="clientNameRules"
               counter="100"
               maxlength="100"
+              @keydown.enter="confirmClientName"
               required
               autofocus
             ></v-text-field>

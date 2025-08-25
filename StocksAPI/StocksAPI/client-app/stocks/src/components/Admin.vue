@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { ref, onMounted } from 'vue'
-  import { apiGet, apiPost, apiPut, apiDelete } from '../api'
+  import { useApi } from '../api'
   import type ProductItem from '../models/ProductItem'
   import { ProductType, getProductTypeDisplayName } from '../models/ProductType'
 
@@ -18,6 +18,8 @@
 
   const editDialog = ref(false)
   const savingEdit = ref(false)
+
+  const { apiGet, apiPost, apiPut, apiDelete } = useApi()
 
   // Form data
   const newProduct = ref({
@@ -128,8 +130,13 @@
       const response = await apiGet('/api/products')
       products.value = response.data.items as ProductItem[]
       updateUniqueProducts()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching products:', error)
+      if (error.response?.status === 403) {
+        showNotification('You do not have permission to view products.', 'error')
+        return
+      }
+      showNotification('Failed to load products', 'error')
     } finally {
       loading.value = false
     }
@@ -188,13 +195,17 @@
       // Refresh the list
       await fetchProducts()
     } catch (error: any) {
+      console.error('Error saving product:', error)
+      if (error.status === 403) {
+        showNotification('You do not have permission to perform this action.', 'error')
+        return
+      }
       const errorMessage =
         error.response?.data?.errors.generalErrors[0] ||
         error.response?.data?.message ||
         error.message ||
         'Failed to save product'
       showNotification(`Error: ${errorMessage}`, 'error')
-      console.error('Error saving product:', error)
     } finally {
       saving.value = false
     }
@@ -228,21 +239,24 @@
 
       // Clear only color and stock fields, keep product selected
       newColor.value = {
-        productId: newColor.value.productId, // Keep the selected product
+        productId: newColor.value.productId,
         colorCode: '',
         stockCount: null,
       }
 
-      // Refresh the list
       await fetchProducts()
     } catch (error: any) {
+      console.error('Error saving color variant:', error)
+      if (error.response?.status === 403) {
+        showNotification('You do not have permission to add color variants.', 'error')
+        return
+      }
       const errorMessage =
         error.response?.data?.errors.generalErrors[0] ||
         error.response?.data?.message ||
         error.message ||
         'Failed to save color variant'
       showNotification(`Error: ${errorMessage}`, 'error')
-      console.error('Error saving color variant:', error)
     } finally {
       savingColor.value = false
     }
@@ -347,27 +361,28 @@
     try {
       let response
       if (hasColor) {
-        // Delete specific color variant
         response = await apiDelete(`/api/product/${product.productId}/colors/${product.colorId}`)
         showNotification('Color variant deleted successfully!', 'success')
       } else {
-        // Delete entire product
         response = await apiDelete(`/api/product/${product.productId}`)
         showNotification('Product deleted successfully!', 'success')
       }
       console.log('Delete response:', response.data)
       closeDeleteDialog()
 
-      // Refresh the list
       await fetchProducts()
     } catch (error: any) {
+      console.error('Error deleting item:', error)
+      if (error.response?.status === 403) {
+        showNotification('You do not have permission to delete items.', 'error')
+        return
+      }
       const errorMessage =
         error.response?.data?.errors?.generalErrors?.[0] ||
         error.response?.data?.message ||
         error.message ||
         'Failed to delete item'
       showNotification(`Error: ${errorMessage}`, 'error')
-      console.error('Error deleting item:', error)
     } finally {
       deleting.value = false
     }

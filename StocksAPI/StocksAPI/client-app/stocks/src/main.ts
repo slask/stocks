@@ -69,6 +69,7 @@ router.beforeEach(async (to, _, next) => {
     const roles = user.value?.['stocks/roles'] || []
 
     if (!roles.includes('Admin')) {
+      console.log('User is not an admin')
       // Redirect to unauthorized or home
       next('/')
       return
