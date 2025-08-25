@@ -11,7 +11,7 @@ public class AddColorToProductEndpoint(StocksDbContext db)
     public override void Configure()
     {
         Post("/product/{productId}/colors");
-        AllowAnonymous();
+        Policies("Admin");
     }
 
     public async override Task HandleAsync(AddColorToProductRequest req, CancellationToken ct)

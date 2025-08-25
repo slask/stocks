@@ -9,7 +9,7 @@ public class EditProductEndpoint(StocksDbContext db, ILogger<EditProductEndpoint
     public override void Configure()
     {
         Put("/product/{Id}");
-        AllowAnonymous();
+        Policies("Admin");
     }
 
     public async override Task HandleAsync(EditProductRequest req, CancellationToken ct)

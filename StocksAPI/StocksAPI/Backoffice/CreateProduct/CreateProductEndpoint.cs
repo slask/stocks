@@ -10,7 +10,7 @@ public class CreateProductEndpoint(StocksDbContext db) : Endpoint<CreateProductR
     public override void Configure()
     {
         Post("/product");
-        AllowAnonymous();
+        Policies("Admin");
     }
 
     public async override Task HandleAsync(CreateProductRequest req, CancellationToken ct)

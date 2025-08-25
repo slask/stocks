@@ -11,7 +11,7 @@ public class SaveOrderEndpoint(StocksDbContext db, ILogger<SaveOrderEndpoint> lo
     public override void Configure()
     {
         Post("/orders");
-        AllowAnonymous();
+        Policies("Employee");
     }
 
     public async override Task HandleAsync(SaveOrderRequest req, CancellationToken ct)

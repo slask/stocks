@@ -9,7 +9,7 @@ public class DeleteProductEndpoint(StocksDbContext db) : EndpointWithoutRequest
     public override void Configure()
     {
         Delete("/product/{id}");
-        AllowAnonymous();
+        Policies("Admin");
     }
 
     public async override Task HandleAsync(CancellationToken ct)

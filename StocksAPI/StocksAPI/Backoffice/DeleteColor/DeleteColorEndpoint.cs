@@ -9,7 +9,7 @@ public class DeleteColorEndpoint(StocksDbContext db) : Endpoint<DeleteColorReque
     public override void Configure()
     {
         Delete("/product/{ProductId}/colors/{ColorId}");
-        AllowAnonymous();
+        Policies("Admin");
     }
 
     public async override Task HandleAsync(DeleteColorRequest req, CancellationToken ct)

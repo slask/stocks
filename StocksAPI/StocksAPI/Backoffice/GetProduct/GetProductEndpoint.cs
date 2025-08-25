@@ -9,7 +9,7 @@ public class GetProductEndpoint(StocksDbContext db) : Endpoint<GetProductRequest
     public override void Configure()
     {
         Get("/product/{Id}");
-        AllowAnonymous();
+        Policies("Employee");
     }
 
     public async override Task HandleAsync(GetProductRequest req, CancellationToken ct)

@@ -9,7 +9,7 @@ public class ListProductsEndpoint(StocksDbContext db) : EndpointWithoutRequest<L
     public override void Configure()
     {
         Get("products");
-        AllowAnonymous(); // Adjust according to your authentication requirements
+        Policies("Employee");
     }
 
     public async override Task HandleAsync(CancellationToken ct)
