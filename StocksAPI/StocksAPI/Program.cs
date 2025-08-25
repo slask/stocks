@@ -1,5 +1,8 @@
+using System.Security.Claims;
 using FastEndpoints;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using StocksAPI.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +11,37 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddFastEndpoints();
+
+// Configure Auth0 Authentication
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = builder.Configuration["AUTH0_DOMAIN"];
+        options.Audience = builder.Configuration["AUTH0_AUDIENCE"];
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            NameClaimType = "username",
+            RoleClaimType = "stocks/roles", // This is important for roles
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+
+// Configure role-based authorization policies
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy => 
+        policy.RequireRole("Admin"));
+    
+    options.AddPolicy("Employee", policy => 
+        policy.RequireRole("Employee", "Admin"));
+});
+
 
 builder.Services.AddDbContext<StocksDbContext>(options =>
 {
@@ -46,6 +80,11 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors("AllowAllOrigins");
+
+// Add authentication and authorization middleware
+app.UseAuthentication();
+app.UseAuthorization();
+
 
 app.UseFastEndpoints(c =>
 {
