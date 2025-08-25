@@ -10,8 +10,10 @@
     "build-only": "vite build"
   },
   "dependencies": {
+    "@auth0/auth0-vue": "^2.4.0",
     "@mdi/font": "^7.4.47",
     "axios": "^1.11.0",
+    "prettier": "^3.6.2",
     "sass": "^1.90.0",
     "vue": "^3.5.18",
     "vue-router": "^4.5.1",
