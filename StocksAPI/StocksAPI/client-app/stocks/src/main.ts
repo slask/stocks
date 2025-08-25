@@ -90,4 +90,4 @@ const auth = createAuth0({
   useRefreshTokens: true, // Enable refresh tokens
 })
 
-createApp(App).use(vuetify).use(router).use(auth).mount('#app')
+createApp(App).use(auth).use(vuetify).use(router).mount('#app')

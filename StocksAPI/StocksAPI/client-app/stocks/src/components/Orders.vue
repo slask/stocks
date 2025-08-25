@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { ref, onMounted, computed } from 'vue'
-  import axios from 'axios'
+  import { apiGet, apiPost } from '../api'
   import * as XLSX from 'xlsx'
   import type ProductItem from '../models/ProductItem'
   import { ProductType, getProductTypeDisplayName } from '../models/ProductType'
@@ -121,7 +121,7 @@
   const fetchProducts = async () => {
     loading.value = true
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/products`)
+      const response = await apiGet('/api/products')
       products.value = response.data.items as ProductItem[]
     } catch (error) {
       console.error('Error fetching products:', error)
@@ -268,7 +268,7 @@
     finalizingOrder.value = true
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/orders`, {
+      const response = await apiPost('/api/orders', {
         clientName: clientName.value,
         items: orderItems.value,
       })

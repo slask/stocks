@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { ref, onMounted } from 'vue'
-  import axios from 'axios'
+  import { apiGet, apiPost, apiPut, apiDelete } from '../api'
   import type ProductItem from '../models/ProductItem'
   import { ProductType, getProductTypeDisplayName } from '../models/ProductType'
 
@@ -125,7 +125,7 @@
   const fetchProducts = async () => {
     loading.value = true
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/products`)
+      const response = await apiGet('/api/products')
       products.value = response.data.items as ProductItem[]
       updateUniqueProducts()
     } catch (error) {
@@ -177,7 +177,7 @@
 
     saving.value = true
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/product`, {
+      const response = await apiPost('/api/product', {
         name: newProduct.value.productName,
         category: newProduct.value.category,
       })
@@ -219,13 +219,10 @@
 
     savingColor.value = true
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/product/${newColor.value.productId}/colors`,
-        {
-          code: newColor.value.colorCode,
-          existingQuantity: newColor.value.stockCount,
-        }
-      )
+      const response = await apiPost(`/api/product/${newColor.value.productId}/colors`, {
+        code: newColor.value.colorCode,
+        existingQuantity: newColor.value.stockCount,
+      })
       console.log('Save Color variant response:', response.data)
       showNotification('Color variant saved successfully!', 'success')
 
@@ -306,10 +303,7 @@
         requestData.quantityToAdd = editProduct.value.quantityToAdd
       }
 
-      const response = await axios.put(
-        `${import.meta.env.VITE_API_URL}/api/product/${editProduct.value.id}`,
-        requestData
-      )
+      const response = await apiPut(`/api/product/${editProduct.value.id}`, requestData)
       console.log('Update response:', response)
       showNotification('Product updated successfully!', 'success')
       closeEditDialog()
@@ -354,13 +348,11 @@
       let response
       if (hasColor) {
         // Delete specific color variant
-        response = await axios.delete(
-          `${import.meta.env.VITE_API_URL}/api/product/${product.productId}/colors/${product.colorId}`
-        )
+        response = await apiDelete(`/api/product/${product.productId}/colors/${product.colorId}`)
         showNotification('Color variant deleted successfully!', 'success')
       } else {
         // Delete entire product
-        response = await axios.delete(`${import.meta.env.VITE_API_URL}/api/product/${product.productId}`)
+        response = await apiDelete(`/api/product/${product.productId}`)
         showNotification('Product deleted successfully!', 'success')
       }
       console.log('Delete response:', response.data)
