@@ -1,6 +1,5 @@
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using StocksAPI.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,29 +9,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddFastEndpoints();
 
-if (builder.Environment.IsDevelopment())
+builder.Services.AddDbContext<StocksDbContext>(options =>
 {
-// Register DbContext with SQLite
-    builder.Services.AddDbContext<StocksDbContext>(options =>
-    {
-        options.UseSqlite("Data Source=stocks.db");
-        options.EnableDetailedErrors();
-        options.EnableSensitiveDataLogging();
-    });
-}
-else
-{
-    //use Supabase connection string from environment variable
-    builder.Services.AddDbContext<StocksDbContext>(options =>
-    {
-        var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ?? throw new InvalidOperationException("Connection string not found.");
+    var connectionString = builder.Configuration["DB_CONNECTION_STRING"] ?? throw new InvalidOperationException("Connection string not found.");
 
-        options.UseNpgsql(connectionString);
-        options.EnableDetailedErrors();
-        options.EnableSensitiveDataLogging();
-        options.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
-    });
-}
+    options.UseNpgsql(connectionString);
+    options.EnableDetailedErrors();
+    options.EnableSensitiveDataLogging();
+});
+
 
 builder.Services.AddSpaStaticFiles(options => { options.RootPath = "client-app/stocks/dist"; });
 

@@ -8,8 +8,7 @@ public class StocksDbContext(DbContextOptions<StocksDbContext> options) : DbCont
     public DbSet<Product> Products { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
-
-
+    
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         base.ConfigureConventions(configurationBuilder);
@@ -67,6 +66,5 @@ public class StocksDbContext(DbContextOptions<StocksDbContext> options) : DbCont
                 .HasForeignKey(oi => oi.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
-
     }
 }

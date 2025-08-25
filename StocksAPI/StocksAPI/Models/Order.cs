@@ -1,6 +1,4 @@
 
-using System.ComponentModel.DataAnnotations;
-
 namespace StocksAPI.Models;
 
 public class Order

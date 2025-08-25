@@ -16,14 +16,15 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.3"/>
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4"/>
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="Backoffice\SaveOrder\" />
+        <Folder Include="Backoffice\SaveOrder\"/>
         <Folder Include="client-app\"/>
-        <Folder Include="client-app\stocks\dist\" />
-        <Folder Include="wwwroot\" />
+        <Folder Include="client-app\stocks\dist\"/>
+        <Folder Include="Data\Migrations\"/>
+        <Folder Include="wwwroot\"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -33,34 +34,19 @@
     </ItemGroup>
 
     <ItemGroup>
-      <_ContentIncludedByDefault Remove="wwwroot\assets\index-Cmat8wZE.css" />
-      <_ContentIncludedByDefault Remove="wwwroot\assets\index-CY7xsHNe.js" />
+        <_ContentIncludedByDefault Remove="wwwroot\assets\index-Cmat8wZE.css"/>
+        <_ContentIncludedByDefault Remove="wwwroot\assets\index-CY7xsHNe.js"/>
     </ItemGroup>
 
-<!--    <ItemGroup>-->
-<!--        <ClientDistFiles Include="client-app\stocks\dist\**\*.*" />-->
-<!--    </ItemGroup>-->
-
-<!--    <Target Name="CopySPAFilesToPublishFolder" AfterTargets="ComputeFilesToPublish">-->
-<!--        &lt;!&ndash; Optionally build SPA here if needed, e.g. npm run build &ndash;&gt;-->
-<!--        &lt;!&ndash; Copy SPA dist files to wwwroot in publish directory &ndash;&gt;-->
-<!--        <Copy SourceFiles="@(ClientDistFiles)"-->
-<!--              DestinationFiles="@(ClientDistFiles->'%(PublishDir)%(RecursiveDir)%(Filename)%(Extension)')" />-->
-<!--    </Target>-->
-
-
-    
     <Target Name="PublishSPA" AfterTargets="ComputeFilesToPublish">
-
-
-    <!-- Copy SPA build output into the publish folder -->
-    <ItemGroup>
-        <DistFiles Include="client-app\stocks\dist\**\*.*" />
-        <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
-            <RelativePath>%(DistFiles.Identity)</RelativePath>
-            <CopyToPublishDirectory>Always</CopyToPublishDirectory>
-        </ResolvedFileToPublish>
-    </ItemGroup>
+        <!-- Copy SPA build output into the publish folder -->
+        <ItemGroup>
+            <DistFiles Include="client-app\stocks\dist\**\*.*"/>
+            <ResolvedFileToPublish Include="@(DistFiles->'%(FullPath)')" Exclude="@(ResolvedFileToPublish)">
+                <RelativePath>%(DistFiles.Identity)</RelativePath>
+                <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+            </ResolvedFileToPublish>
+        </ItemGroup>
     </Target>
 
 </Project>
