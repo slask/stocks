@@ -1,5 +1,6 @@
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using StocksAPI.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,12 +25,12 @@ else
     //use Supabase connection string from environment variable
     builder.Services.AddDbContext<StocksDbContext>(options =>
     {
-        var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
-                               ?? throw new InvalidOperationException("Connection string not found.");
-        
+        var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING") ?? throw new InvalidOperationException("Connection string not found.");
+
         options.UseNpgsql(connectionString);
         options.EnableDetailedErrors();
         options.EnableSensitiveDataLogging();
+        options.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
     });
 }
 
@@ -75,7 +76,7 @@ app.UseWhen(
         {
             app.UseSpaStaticFiles();
         }
-        
+
         appBuilder.UseSpa(spa =>
         {
             if (app.Environment.IsDevelopment())
@@ -93,22 +94,22 @@ async static Task ApplyMigrationsAsync(WebApplication app)
 {
     using var scope = app.Services.CreateScope();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    
+
     try
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<StocksDbContext>();
-        
+
         logger.LogInformation("Checking for pending database migrations...");
-        
+
         var pendingMigrations = (await dbContext.Database.GetPendingMigrationsAsync()).ToList();
-        
+
         if (pendingMigrations.Any())
         {
-            logger.LogInformation("Applying {Count} pending migrations: {Migrations}", 
+            logger.LogInformation("Applying {Count} pending migrations: {Migrations}",
                 pendingMigrations.Count, string.Join(", ", pendingMigrations));
-            
+
             await dbContext.Database.MigrateAsync();
-            
+
             logger.LogInformation("Database migrations applied successfully");
         }
         else
@@ -122,4 +123,3 @@ async static Task ApplyMigrationsAsync(WebApplication app)
         throw;
     }
 }
-
