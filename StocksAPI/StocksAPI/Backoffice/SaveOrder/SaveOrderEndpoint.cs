@@ -1,11 +1,12 @@
 using FastEndpoints;
+using Microsoft.EntityFrameworkCore;
 using StocksAPI.Data;
 using StocksAPI.Models;
 using Order = StocksAPI.Models.Order;
 
 namespace StocksAPI.Backoffice.SaveOrder;
 
-public class SaveOrderEndpoint(StocksDbContext db) : Endpoint<SaveOrderRequest, SaveOrderResponse>
+public class SaveOrderEndpoint(StocksDbContext db, ILogger<SaveOrderEndpoint> logger) : Endpoint<SaveOrderRequest, SaveOrderResponse>
 {
     public override void Configure()
     {
@@ -24,13 +25,28 @@ public class SaveOrderEndpoint(StocksDbContext db) : Endpoint<SaveOrderRequest, 
             Items = new List<OrderItem>()
         };
 
-        // Convert request items to order items
+        // Convert request items to order items and validate they exist in stock
+        var stockUpdates = new List<(Guid ProductId, Guid ColorId, int Quantity)>();
+
         foreach (var itemDto in req.Items)
         {
             // Parse the category from string to enum
             if (!Enum.TryParse<ProductType>(itemDto.Category, out var category))
             {
                 ThrowError($"Invalid category: {itemDto.Category}");
+                return;
+            }
+
+            // Parse ProductId and ColorId from strings to Guids
+            if (!Guid.TryParse(itemDto.ProductId, out var productId))
+            {
+                ThrowError($"Invalid product ID format: {itemDto.ProductId}");
+                return;
+            }
+
+            if (!Guid.TryParse(itemDto.ColorId, out var colorId))
+            {
+                ThrowError($"Invalid color ID format: {itemDto.ColorId}");
                 return;
             }
 
@@ -47,6 +63,40 @@ public class SaveOrderEndpoint(StocksDbContext db) : Endpoint<SaveOrderRequest, 
             };
 
             order.Items.Add(orderItem);
+            stockUpdates.Add((productId, colorId, itemDto.Quantity));
+        }
+
+        // Update stock quantities
+        foreach (var (productId, colorId, quantity) in stockUpdates)
+        {
+            var product = await db.Products
+                .Include(p => p.Colors)
+                .FirstOrDefaultAsync(p => p.Id == productId, ct);
+
+            if (product == null)
+            {
+                ThrowError($"Product with ID {productId} not found in stock.");
+                return;
+            }
+
+            var color = product.Colors.FirstOrDefault(c => c.Id == colorId);
+            if (color == null)
+            {
+                ThrowError($"Color with ID {colorId} not found for product {product.Name}.");
+                return;
+            }
+
+            // Check if there's sufficient stock
+            if (color.StockCount < quantity)
+            {
+                logger.LogWarning($"Insufficient stock for {product.Name} (Color: {color.Code}). Available: {color.StockCount}, Requested: {quantity}");
+                color.StockCount = 0;
+            }
+            else
+            {
+                // Subtract the ordered quantity from stock
+                color.StockCount -= quantity;
+            }
         }
 
         // Save to database
@@ -57,7 +107,7 @@ public class SaveOrderEndpoint(StocksDbContext db) : Endpoint<SaveOrderRequest, 
         await SendOkAsync(new SaveOrderResponse
         {
             OrderId = order.Id,
-            Message = "Order saved successfully"
+            Message = "Order saved successfully and stock updated"
         }, ct);
     }
 }
