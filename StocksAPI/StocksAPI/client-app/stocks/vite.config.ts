@@ -6,13 +6,11 @@ import Vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 export default defineConfig({
   plugins: [
     vue({
-      template: { transformAssetUrls }
+      template: { transformAssetUrls },
     }),
-    Vuetify()
+    Vuetify(),
   ],
   optimizeDeps: {
-    exclude: [
-      'vuetify'
-    ],
-  }
+    exclude: ['vuetify'],
+  },
 })

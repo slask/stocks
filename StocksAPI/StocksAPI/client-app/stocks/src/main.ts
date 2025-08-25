@@ -8,7 +8,7 @@ import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 
 import { aliases, mdi } from 'vuetify/iconsets/mdi'
-import { createAuth0, useAuth0 } from '@auth0/auth0-vue';
+import { createAuth0, useAuth0 } from '@auth0/auth0-vue'
 
 import App from './App.vue'
 
@@ -41,16 +41,15 @@ const router = createRouter({
   routes,
 })
 
-
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _, next) => {
   const { user, isAuthenticated, isLoading } = useAuth0()
 
   if (to.meta.requiresAdmin) {
     // Wait for Auth0 to finish loading
     if (isLoading.value) {
       // Wait for auth to complete
-      await new Promise((resolve) => {
-        const unwatch = watch(isLoading, (loading) => {
+      await new Promise(resolve => {
+        const unwatch = watch(isLoading, loading => {
           if (!loading) {
             unwatch()
             resolve(true)
@@ -61,13 +60,13 @@ router.beforeEach(async (to, from, next) => {
 
     if (!isAuthenticated.value) {
       // Redirect to login
-      console.log('User not authenticated');
+      console.log('User not authenticated')
       next('/')
       return
     }
-    console.log('User in guard:', user.value);
+
     // Check admin role
-    const roles = user.value['stocks/roles'] || [];
+    const roles = user.value?.['stocks/roles'] || []
 
     if (!roles.includes('Admin')) {
       // Redirect to unauthorized or home
@@ -84,7 +83,7 @@ const auth = createAuth0({
   clientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
   authorizationParams: {
     redirect_uri: window.location.origin,
-    audience: import.meta.env.VITE_AUTH0_AUDIENCE
+    audience: import.meta.env.VITE_AUTH0_AUDIENCE,
   },
   // Enable caching to persist authentication
   cacheLocation: 'localstorage', // Store tokens in localStorage instead of memory
