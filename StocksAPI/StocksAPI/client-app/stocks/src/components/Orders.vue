@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
+import * as XLSX from 'xlsx'
 import type ProductItem from '../models/ProductItem'
 import { ProductType, getProductTypeDisplayName } from '../models/ProductType'
 import type OrderItem from '../models/OrderItem'
@@ -277,6 +278,9 @@ const confirmFinalizeOrder = async () => {
     })
     console.log('Finalize Order response:', response.data)
 
+    // Generate and download Excel file
+    generateExcelFile()
+
     // For now, just clear the order and show success
     orderItems.value = []
     clientName.value = ''
@@ -296,6 +300,75 @@ const confirmFinalizeOrder = async () => {
 
 const closeFinalizeOrderDialog = () => {
   finalizeOrderDialog.value = false
+}
+
+const generateExcelFile = () => {
+  // Create workbook and worksheet
+  const workbook = XLSX.utils.book_new()
+  
+  // Order header information
+  const headerData = [
+    ['TTH Stocks - Order Report'],
+    [''],
+    ['Client Name:', clientName.value],
+    ['Order Date:', new Date().toLocaleDateString()],
+    ['Total Items:', totalItems.value],
+    ['Unique Products:', totalUniqueProducts.value],
+    ['']
+  ]
+  
+  // Order items data with headers
+  const itemsData = [
+    ['Product Name', 'Category', 'Color Code', 'Quantity']
+  ]
+  
+  // Add order items
+  orderItems.value.forEach(item => {
+    itemsData.push([
+      item.productName,
+      getProductTypeDisplayName(item.category as ProductType),
+      item.colorCode,
+      item.quantity.toString()
+    ])
+  })
+  
+  // Add summary row
+  itemsData.push(
+    [''],
+    ['TOTAL:', '', '', totalItems.value.toString()]
+  )
+  
+  // Combine header and items data
+  const allData = [...headerData, ...itemsData]
+  
+  // Create worksheet
+  const worksheet = XLSX.utils.aoa_to_sheet(allData)
+  
+  // Set column widths
+  worksheet['!cols'] = [
+    { width: 25 }, // Product Name
+    { width: 20 }, // Category
+    { width: 15 }, // Color Code
+    { width: 10 }  // Quantity
+  ]
+  
+  // Style the header rows (make them bold)
+  if (worksheet['A1']) worksheet['A1'].s = { font: { bold: true, sz: 14 } }
+  if (worksheet['A8']) worksheet['A8'].s = { font: { bold: true } }
+  if (worksheet['B8']) worksheet['B8'].s = { font: { bold: true } }
+  if (worksheet['C8']) worksheet['C8'].s = { font: { bold: true } }
+  if (worksheet['D8']) worksheet['D8'].s = { font: { bold: true } }
+  
+  // Add worksheet to workbook
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Order')
+  
+  // Generate filename with client name and date
+  const date = new Date().toISOString().split('T')[0]
+  const sanitizedClientName = clientName.value.replace(/[^a-zA-Z0-9]/g, '_')
+  const filename = `TTH_Order_${sanitizedClientName}_${date}.xlsx`
+  
+  // Download the file
+  XLSX.writeFile(workbook, filename)
 }
 
 // Custom search function for multi-word search
