@@ -9,13 +9,29 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddFastEndpoints();
 
-// Register DbContext with SQLite
-builder.Services.AddDbContext<StocksDbContext>(options =>
+if (builder.Environment.IsDevelopment())
 {
-    options.UseSqlite("Data Source=stocks.db");
-    options.EnableDetailedErrors();
-    options.EnableSensitiveDataLogging();
-});
+// Register DbContext with SQLite
+    builder.Services.AddDbContext<StocksDbContext>(options =>
+    {
+        options.UseSqlite("Data Source=stocks.db");
+        options.EnableDetailedErrors();
+        options.EnableSensitiveDataLogging();
+    });
+}
+else
+{
+    //use Supabase connection string from environment variable
+    builder.Services.AddDbContext<StocksDbContext>(options =>
+    {
+        var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION_STRING")
+                               ?? throw new InvalidOperationException("Connection string not found.");
+        
+        options.UseNpgsql(connectionString);
+        options.EnableDetailedErrors();
+        options.EnableSensitiveDataLogging();
+    });
+}
 
 builder.Services.AddSpaStaticFiles(options => { options.RootPath = "client-app/stocks/dist"; });
 
@@ -28,6 +44,10 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Apply database migrations on startup
+await ApplyMigrationsAsync(app);
+
 
 app.UseDeveloperExceptionPage();
 
@@ -67,3 +87,39 @@ app.UseWhen(
     });
 
 app.Run();
+
+// Method to apply database migrations
+async static Task ApplyMigrationsAsync(WebApplication app)
+{
+    using var scope = app.Services.CreateScope();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+    
+    try
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<StocksDbContext>();
+        
+        logger.LogInformation("Checking for pending database migrations...");
+        
+        var pendingMigrations = (await dbContext.Database.GetPendingMigrationsAsync()).ToList();
+        
+        if (pendingMigrations.Any())
+        {
+            logger.LogInformation("Applying {Count} pending migrations: {Migrations}", 
+                pendingMigrations.Count, string.Join(", ", pendingMigrations));
+            
+            await dbContext.Database.MigrateAsync();
+            
+            logger.LogInformation("Database migrations applied successfully");
+        }
+        else
+        {
+            logger.LogInformation("Database is up to date. No migrations to apply");
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while applying database migrations");
+        throw;
+    }
+}
+
