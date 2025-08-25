@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using FastEndpoints;
 using Microsoft.EntityFrameworkCore;
 using StocksAPI.Data;
@@ -16,12 +17,16 @@ public class SaveOrderEndpoint(StocksDbContext db, ILogger<SaveOrderEndpoint> lo
 
     public async override Task HandleAsync(SaveOrderRequest req, CancellationToken ct)
     {
+        // Extract username from the JWT token
+        var username = User.Identity?.Name ?? "unknown";
+
         // Create the order entity
         var order = new Order
         {
             Id = Guid.NewGuid(),
             ClientName = req.ClientName,
             CreatedAt = DateTime.UtcNow,
+            CreatedBy = username,
             Items = new List<OrderItem>()
         };
 
@@ -36,15 +41,14 @@ public class SaveOrderEndpoint(StocksDbContext db, ILogger<SaveOrderEndpoint> lo
                 ThrowError($"Invalid category: {itemDto.Category}");
                 return;
             }
-
-            // Parse ProductId and ColorId from strings to Guids
-            if (!Guid.TryParse(itemDto.ProductId, out var productId))
+            
+            if (itemDto.ProductId == Guid.Empty)
             {
                 ThrowError($"Invalid product ID format: {itemDto.ProductId}");
                 return;
             }
 
-            if (!Guid.TryParse(itemDto.ColorId, out var colorId))
+            if (itemDto.ColorId == Guid.Empty)
             {
                 ThrowError($"Invalid color ID format: {itemDto.ColorId}");
                 return;
@@ -63,7 +67,7 @@ public class SaveOrderEndpoint(StocksDbContext db, ILogger<SaveOrderEndpoint> lo
             };
 
             order.Items.Add(orderItem);
-            stockUpdates.Add((productId, colorId, itemDto.Quantity));
+            stockUpdates.Add((itemDto.ProductId, itemDto.ColorId, itemDto.Quantity));
         }
 
         // Update stock quantities

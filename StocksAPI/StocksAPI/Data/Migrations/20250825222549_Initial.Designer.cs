@@ -12,7 +12,7 @@ using StocksAPI.Data;
 namespace StocksAPI.Data.Migrations
 {
     [DbContext(typeof(StocksDbContext))]
-    [Migration("20250825093330_Initial")]
+    [Migration("20250825222549_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -39,6 +39,10 @@ namespace StocksAPI.Data.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.HasKey("Id");
 
                     b.ToTable("Orders");
@@ -59,16 +63,14 @@ namespace StocksAPI.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("ColorId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("ColorId")
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ProductId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("ProductName")
                         .IsRequired()

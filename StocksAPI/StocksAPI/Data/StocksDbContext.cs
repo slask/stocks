@@ -48,6 +48,7 @@ public class StocksDbContext(DbContextOptions<StocksDbContext> options) : DbCont
             entity.HasKey(o => o.Id);
             entity.Property(o => o.ClientName).IsRequired().HasMaxLength(100);
             entity.Property(o => o.CreatedAt).IsRequired();
+            entity.Property(o => o.CreatedBy).HasMaxLength(100);
         });
 
         // Configure OrderItem entity

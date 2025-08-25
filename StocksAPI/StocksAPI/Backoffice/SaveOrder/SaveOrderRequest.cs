@@ -8,8 +8,8 @@ public class SaveOrderRequest
 
 public class OrderItemDto
 {
-    public string ProductId { get; set; } = string.Empty;
-    public string ColorId { get; set; } = string.Empty;
+    public Guid ProductId { get; set; }
+    public Guid ColorId { get; set; }
     public string ProductName { get; set; } = string.Empty;
     public string Category { get; set; } = string.Empty;
     public string ColorCode { get; set; } = string.Empty;
