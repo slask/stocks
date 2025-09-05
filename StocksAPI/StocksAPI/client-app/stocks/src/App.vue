@@ -118,7 +118,7 @@
           <div v-if="!isLoading">
             <RouterView v-if="isAuthenticated" />
             <div v-else class="text-center pa-12">
-              <v-icon icon="mdi-lock" size="64" color="grey-lighten-1" class="mb-4"></v-icon>
+              <v-icon icon="mdi-lock" size="64" color="red" class="mb-4"></v-icon>
               <h2 class="text-h4 mb-4">Authentication Required</h2>
               <p class="text-body-1 mb-6">Please log in to access the Teletehnica Stocks application.</p>
               <v-btn color="#021828" variant="elevated" size="large" @click="handleLogin" prepend-icon="mdi-login">

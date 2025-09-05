@@ -5,6 +5,9 @@
   import type ProductItem from '../models/ProductItem'
   import { ProductType, getProductTypeDisplayName } from '../models/ProductType'
   import type OrderItem from '../models/OrderItem'
+  import { useAuth0 } from '@auth0/auth0-vue'
+
+  const { user } = useAuth0()
 
   const products = ref<ProductItem[]>([])
   const loading = ref(false)
@@ -315,27 +318,59 @@
       ['TTH Stocks - Order Report'],
       [''],
       ['Client Name:', clientName.value],
+      ['Created By:', user.value?.username || user.value?.name || user.value?.email || 'Unknown User'],
       ['Order Date:', new Date().toLocaleDateString()],
       ['Total Items:', totalItems.value],
       ['Unique Products:', totalUniqueProducts.value],
       [''],
     ]
 
+    // Group order items by product name and calculate subtotals
+    const groupedItems = orderItems.value.reduce(
+      (acc, item) => {
+        if (!acc[item.productName]) {
+          acc[item.productName] = []
+        }
+        acc[item.productName].push(item)
+        return acc
+      },
+      {} as Record<string, OrderItem[]>
+    )
+
     // Order items data with headers
-    const itemsData = [['Product Name', 'Category', 'Color Code', 'Quantity']]
+    const itemsData = [['Product Name', 'Color Code', 'Quantity']]
 
-    // Add order items
-    orderItems.value.forEach(item => {
-      itemsData.push([
-        item.productName,
-        getProductTypeDisplayName(item.category as ProductType),
-        item.colorCode,
-        item.quantity.toString(),
-      ])
-    })
+    // Sort product names alphabetically and add grouped items with subtotals
+    Object.keys(groupedItems)
+      .sort((a, b) => a.localeCompare(b)) // Sort product names alphabetically
+      .forEach(productName => {
+        const items = groupedItems[productName]
 
-    // Add summary row
-    itemsData.push([''], ['TOTAL:', '', '', totalItems.value.toString()])
+        // Sort items within each product by color code alphabetically
+        items.sort((a, b) => a.colorCode.localeCompare(b.colorCode))
+
+        // Add items for this product
+        items.forEach(item => {
+          itemsData.push([item.productName, item.colorCode, item.quantity.toString()])
+        })
+
+        // Calculate subtotal for this product
+        const subtotal = items.reduce((sum, item) => sum + item.quantity, 0)
+
+        // Add subtotal row
+        itemsData.push([`Subtotal - ${productName}:`, '', subtotal.toString()])
+
+        // Add empty row for spacing
+        itemsData.push(['', '', ''])
+      })
+
+    // Remove the last empty row
+    if (itemsData[itemsData.length - 1][0] === '') {
+      itemsData.pop()
+    }
+
+    // Add final total row
+    itemsData.push([''], ['GRAND TOTAL:', '', totalItems.value.toString()])
 
     // Combine header and items data
     const allData = [...headerData, ...itemsData]
@@ -345,18 +380,59 @@
 
     // Set column widths
     worksheet['!cols'] = [
-      { width: 25 }, // Product Name
-      { width: 20 }, // Category
+      { width: 35 }, // Product Name (wider for subtotal text)
       { width: 15 }, // Color Code
       { width: 10 }, // Quantity
     ]
 
-    // Style the header rows (make them bold)
-    if (worksheet['A1']) worksheet['A1'].s = { font: { bold: true, sz: 14 } }
+    // Style the headers and subtotal rows
+    const headerRowIndex = 7 // Row 8 (0-indexed)
     if (worksheet['A8']) worksheet['A8'].s = { font: { bold: true } }
     if (worksheet['B8']) worksheet['B8'].s = { font: { bold: true } }
     if (worksheet['C8']) worksheet['C8'].s = { font: { bold: true } }
-    if (worksheet['D8']) worksheet['D8'].s = { font: { bold: true } }
+
+    // Style the title
+    if (worksheet['A1']) worksheet['A1'].s = { font: { bold: true, sz: 14 } }
+
+    // Style subtotal and grand total rows
+    Object.keys(worksheet).forEach(cellAddress => {
+      if (cellAddress.startsWith('A') && cellAddress !== 'A1') {
+        const cell = worksheet[cellAddress]
+        if (cell && cell.v && typeof cell.v === 'string') {
+          if (cell.v.startsWith('Subtotal -')) {
+            // Style subtotal rows
+            cell.s = {
+              font: { bold: true },
+              fill: { fgColor: { rgb: 'E8F4FD' } }, // Light blue background
+            }
+            // Style corresponding quantity cell
+            const rowNum = cellAddress.substring(1)
+            const quantityCell = worksheet[`C${rowNum}`]
+            if (quantityCell) {
+              quantityCell.s = {
+                font: { bold: true },
+                fill: { fgColor: { rgb: 'E8F4FD' } },
+              }
+            }
+          } else if (cell.v === 'GRAND TOTAL:') {
+            // Style grand total row
+            cell.s = {
+              font: { bold: true, sz: 12 },
+              fill: { fgColor: { rgb: 'D4E6F1' } }, // Darker blue background
+            }
+            // Style corresponding quantity cell
+            const rowNum = cellAddress.substring(1)
+            const quantityCell = worksheet[`C${rowNum}`]
+            if (quantityCell) {
+              quantityCell.s = {
+                font: { bold: true, sz: 12 },
+                fill: { fgColor: { rgb: 'D4E6F1' } },
+              }
+            }
+          }
+        }
+      }
+    })
 
     // Add worksheet to workbook
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Order')
