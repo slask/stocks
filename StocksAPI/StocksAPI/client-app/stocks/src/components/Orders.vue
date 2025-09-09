@@ -142,7 +142,7 @@
 
   const getStockStatus = (stockCount: number) => {
     if (stockCount === 0) return { color: '#EB0E0E', text: 'Out of Stock' }
-    if (stockCount < 50) return { color: 'orange', text: 'Low Stock' }
+    if (stockCount < 10) return { color: 'orange', text: 'Low Stock' }
     return { color: '#21603D', text: 'In Stock' }
   }
 
@@ -385,48 +385,107 @@
       { width: 10 }, // Quantity
     ]
 
+    // Define border style
+    const thinBorder = {
+      top: { style: 'thin', color: { rgb: 'FF0000' } },
+      bottom: { style: 'thin', color: { rgb: 'FF0000' } },
+      left: { style: 'thin', color: { rgb: '00FF00' } },
+      right: { style: 'thin', color: { rgb: '000000' } },
+    }
+
+    const bottomBorder = {
+      bottom: { style: 'thin', color: { rgb: 'FF0000' } },
+    }
+
+    // Define proper border styles for XLSX
+    const borderStyle = {
+      style: 'thin',
+      color: { rgb: 'FF0000' },
+    }
+
+    const allBorders = {
+      top: borderStyle,
+      bottom: borderStyle,
+      left: borderStyle,
+      right: borderStyle,
+    }
+
+    const bottomBorderOnly = {
+      bottom: borderStyle,
+    }
+
     // Style the headers and subtotal rows
-    const headerRowIndex = 7 // Row 8 (0-indexed)
-    if (worksheet['A8']) worksheet['A8'].s = { font: { bold: true } }
-    if (worksheet['B8']) worksheet['B8'].s = { font: { bold: true } }
-    if (worksheet['C8']) worksheet['C8'].s = { font: { bold: true } }
+    //const headerRowIndex = 7 // Row 8 (0-indexed)
+    // Style headers and add borders
+    if (worksheet['A8']) worksheet['A8'].s = { font: { bold: true }, border: thinBorder }
+    if (worksheet['B8']) worksheet['B8'].s = { font: { bold: true }, border: thinBorder }
+    if (worksheet['C8']) worksheet['C8'].s = { font: { bold: true }, border: thinBorder }
 
     // Style the title
     if (worksheet['A1']) worksheet['A1'].s = { font: { bold: true, sz: 14 } }
+    // Get the starting row for data (after headers)
+    const dataStartRow = 7 // Row 9 (1-indexed) is where data starts
 
-    // Style subtotal and grand total rows
+    // Style all data rows and add borders
     Object.keys(worksheet).forEach(cellAddress => {
-      if (cellAddress.startsWith('A') && cellAddress !== 'A1') {
+      const match = cellAddress.match(/([A-Z]+)(\d+)/)
+      if (match) {
+        const column = match[1]
+        const row = parseInt(match[2])
         const cell = worksheet[cellAddress]
-        if (cell && cell.v && typeof cell.v === 'string') {
-          if (cell.v.startsWith('Subtotal -')) {
-            // Style subtotal rows
-            cell.s = {
-              font: { bold: true },
-              fill: { fgColor: { rgb: 'E8F4FD' } }, // Light blue background
-            }
-            // Style corresponding quantity cell
-            const rowNum = cellAddress.substring(1)
-            const quantityCell = worksheet[`C${rowNum}`]
-            if (quantityCell) {
-              quantityCell.s = {
+
+        // Only process data rows (after header row)
+        if (row >= dataStartRow && cell) {
+          // Add bottom border to all data cells
+          if (!cell.s) cell.s = {}
+          cell.s.border = bottomBorder
+
+          // Special styling for subtotals and grand total
+          if (column === 'A' && cell.v && typeof cell.v === 'string') {
+            if (cell.v.startsWith('Subtotal -')) {
+              cell.s = {
                 font: { bold: true },
                 fill: { fgColor: { rgb: 'E8F4FD' } },
+                border: bottomBorderOnly,
               }
-            }
-          } else if (cell.v === 'GRAND TOTAL:') {
-            // Style grand total row
-            cell.s = {
-              font: { bold: true, sz: 12 },
-              fill: { fgColor: { rgb: 'D4E6F1' } }, // Darker blue background
-            }
-            // Style corresponding quantity cell
-            const rowNum = cellAddress.substring(1)
-            const quantityCell = worksheet[`C${rowNum}`]
-            if (quantityCell) {
-              quantityCell.s = {
+
+              // Style corresponding cells in the same row
+              const quantityCell = worksheet[`C${row}`]
+              if (quantityCell) {
+                quantityCell.s = {
+                  font: { bold: true },
+                  fill: { fgColor: { rgb: 'E8F4FD' } },
+                  border: bottomBorderOnly,
+                }
+              }
+              const colorCell = worksheet[`B${row}`]
+              if (colorCell) {
+                colorCell.s = {
+                  fill: { fgColor: { rgb: 'E8F4FD' } },
+                  border: bottomBorderOnly,
+                }
+              }
+            } else if (cell.v === 'GRAND TOTAL:') {
+              cell.s = {
                 font: { bold: true, sz: 12 },
                 fill: { fgColor: { rgb: 'D4E6F1' } },
+                border: bottomBorderOnly,
+              }
+              // Style corresponding cells in the same row
+              const quantityCell = worksheet[`C${row}`]
+              if (quantityCell) {
+                quantityCell.s = {
+                  font: { bold: true, sz: 12 },
+                  fill: { fgColor: { rgb: 'D4E6F1' } },
+                  border: bottomBorderOnly,
+                }
+              }
+              const colorCell = worksheet[`B${row}`]
+              if (colorCell) {
+                colorCell.s = {
+                  fill: { fgColor: { rgb: 'D4E6F1' } },
+                  border: bottomBorderOnly,
+                }
               }
             }
           }

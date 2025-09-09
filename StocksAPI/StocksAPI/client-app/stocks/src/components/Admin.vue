@@ -144,7 +144,7 @@
 
   const getStockStatus = (stockCount: number) => {
     if (stockCount === 0) return { color: '#EB0E0E', text: 'Out of Stock' }
-    if (stockCount < 50) return { color: 'orange', text: 'Low Stock' }
+    if (stockCount < 10) return { color: 'orange', text: 'Low Stock' }
     return { color: '#21603D', text: 'In Stock' }
   }
 
