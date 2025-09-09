@@ -20,7 +20,9 @@
     "vue": "^3.5.18",
     "vue-router": "^4.5.1",
     "vuetify": "^3.9.5",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "xlsx-js-style": "^1.2.0",
+    "xlsx-style": "^0.8.13"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.1",

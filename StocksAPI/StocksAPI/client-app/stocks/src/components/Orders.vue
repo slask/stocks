@@ -1,7 +1,7 @@
 <script setup lang="ts">
   import { ref, onMounted, computed } from 'vue'
   import { useApi } from '../api'
-  import * as XLSX from 'xlsx'
+  import * as XLSX from 'xlsx-js-style'
   import type ProductItem from '../models/ProductItem'
   import { ProductType, getProductTypeDisplayName } from '../models/ProductType'
   import type OrderItem from '../models/OrderItem'
@@ -310,7 +310,7 @@
   }
 
   const generateExcelFile = () => {
-    // Create workbook and worksheet
+    // Create workbook
     const workbook = XLSX.utils.book_new()
 
     // Order header information
@@ -342,34 +342,24 @@
 
     // Sort product names alphabetically and add grouped items with subtotals
     Object.keys(groupedItems)
-      .sort((a, b) => a.localeCompare(b)) // Sort product names alphabetically
+      .sort((a, b) => a.localeCompare(b))
       .forEach(productName => {
         const items = groupedItems[productName]
-
-        // Sort items within each product by color code alphabetically
         items.sort((a, b) => a.colorCode.localeCompare(b.colorCode))
 
-        // Add items for this product
         items.forEach(item => {
           itemsData.push([item.productName, item.colorCode, item.quantity.toString()])
         })
 
-        // Calculate subtotal for this product
         const subtotal = items.reduce((sum, item) => sum + item.quantity, 0)
-
-        // Add subtotal row
         itemsData.push([`Subtotal - ${productName}:`, '', subtotal.toString()])
-
-        // Add empty row for spacing
         itemsData.push(['', '', ''])
       })
 
-    // Remove the last empty row
     if (itemsData[itemsData.length - 1][0] === '') {
       itemsData.pop()
     }
 
-    // Add final total row
     itemsData.push([''], ['GRAND TOTAL:', '', totalItems.value.toString()])
 
     // Combine header and items data
@@ -380,118 +370,111 @@
 
     // Set column widths
     worksheet['!cols'] = [
-      { width: 35 }, // Product Name (wider for subtotal text)
-      { width: 15 }, // Color Code
-      { width: 10 }, // Quantity
+      { wch: 35 }, // Product Name
+      { wch: 15 }, // Color Code
+      { wch: 10 }, // Quantity
     ]
 
-    // Define border style
-    const thinBorder = {
-      top: { style: 'thin', color: { rgb: 'FF0000' } },
-      bottom: { style: 'thin', color: { rgb: 'FF0000' } },
-      left: { style: 'thin', color: { rgb: '00FF00' } },
-      right: { style: 'thin', color: { rgb: '000000' } },
+    // Define styles
+    const titleStyle = {
+      font: { bold: true, sz: 16, name: 'Arial' },
+      alignment: { horizontal: 'center' },
     }
 
-    const bottomBorder = {
-      bottom: { style: 'thin', color: { rgb: 'FF0000' } },
+    const headerStyle = {
+      font: { bold: true, sz: 12, name: 'Arial', color: { rgb: 'FFFFFF' } },
+      fill: { fgColor: { rgb: '366092' } },
+      border: {
+        top: { style: 'thin', color: { rgb: '000000' } },
+        bottom: { style: 'thin', color: { rgb: '000000' } },
+        left: { style: 'thin', color: { rgb: '000000' } },
+        right: { style: 'thin', color: { rgb: '000000' } },
+      },
+      alignment: { horizontal: 'center' },
     }
 
-    // Define proper border styles for XLSX
-    const borderStyle = {
-      style: 'thin',
-      color: { rgb: 'FF0000' },
+    const dataStyle = {
+      font: { sz: 11, name: 'Arial' },
+      border: {
+        bottom: { style: 'thin', color: { rgb: '000000' } },
+      },
     }
 
-    const allBorders = {
-      top: borderStyle,
-      bottom: borderStyle,
-      left: borderStyle,
-      right: borderStyle,
+    const subtotalStyle = {
+      font: { bold: true, sz: 11, name: 'Arial' },
+      fill: { fgColor: { rgb: 'E8F4FD' } },
+      border: {
+        top: { style: 'thin', color: { rgb: '000000' } },
+        bottom: { style: 'thin', color: { rgb: '000000' } },
+        left: { style: 'thin', color: { rgb: '000000' } },
+        right: { style: 'thin', color: { rgb: '000000' } },
+      },
     }
 
-    const bottomBorderOnly = {
-      bottom: borderStyle,
+    const grandTotalStyle = {
+      font: { bold: true, sz: 12, name: 'Arial' },
+      fill: { fgColor: { rgb: 'D4E6F1' } },
+      border: {
+        top: { style: 'medium', color: { rgb: '000000' } },
+        bottom: { style: 'medium', color: { rgb: '000000' } },
+        left: { style: 'medium', color: { rgb: '000000' } },
+        right: { style: 'medium', color: { rgb: '000000' } },
+      },
     }
 
-    // Style the headers and subtotal rows
-    //const headerRowIndex = 7 // Row 8 (0-indexed)
-    // Style headers and add borders
-    if (worksheet['A8']) worksheet['A8'].s = { font: { bold: true }, border: thinBorder }
-    if (worksheet['B8']) worksheet['B8'].s = { font: { bold: true }, border: thinBorder }
-    if (worksheet['C8']) worksheet['C8'].s = { font: { bold: true }, border: thinBorder }
+    // Apply styles to cells
+    const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1:C1')
 
-    // Style the title
-    if (worksheet['A1']) worksheet['A1'].s = { font: { bold: true, sz: 14 } }
-    // Get the starting row for data (after headers)
-    const dataStartRow = 7 // Row 9 (1-indexed) is where data starts
+    // Track which rows are subtotal and grand total rows
+    const subtotalRows = new Set<number>()
+    const grandTotalRows = new Set<number>()
 
-    // Style all data rows and add borders
-    Object.keys(worksheet).forEach(cellAddress => {
-      const match = cellAddress.match(/([A-Z]+)(\d+)/)
-      if (match) {
-        const column = match[1]
-        const row = parseInt(match[2])
-        const cell = worksheet[cellAddress]
-
-        // Only process data rows (after header row)
-        if (row >= dataStartRow && cell) {
-          // Add bottom border to all data cells
-          if (!cell.s) cell.s = {}
-          cell.s.border = bottomBorder
-
-          // Special styling for subtotals and grand total
-          if (column === 'A' && cell.v && typeof cell.v === 'string') {
-            if (cell.v.startsWith('Subtotal -')) {
-              cell.s = {
-                font: { bold: true },
-                fill: { fgColor: { rgb: 'E8F4FD' } },
-                border: bottomBorderOnly,
-              }
-
-              // Style corresponding cells in the same row
-              const quantityCell = worksheet[`C${row}`]
-              if (quantityCell) {
-                quantityCell.s = {
-                  font: { bold: true },
-                  fill: { fgColor: { rgb: 'E8F4FD' } },
-                  border: bottomBorderOnly,
-                }
-              }
-              const colorCell = worksheet[`B${row}`]
-              if (colorCell) {
-                colorCell.s = {
-                  fill: { fgColor: { rgb: 'E8F4FD' } },
-                  border: bottomBorderOnly,
-                }
-              }
-            } else if (cell.v === 'GRAND TOTAL:') {
-              cell.s = {
-                font: { bold: true, sz: 12 },
-                fill: { fgColor: { rgb: 'D4E6F1' } },
-                border: bottomBorderOnly,
-              }
-              // Style corresponding cells in the same row
-              const quantityCell = worksheet[`C${row}`]
-              if (quantityCell) {
-                quantityCell.s = {
-                  font: { bold: true, sz: 12 },
-                  fill: { fgColor: { rgb: 'D4E6F1' } },
-                  border: bottomBorderOnly,
-                }
-              }
-              const colorCell = worksheet[`B${row}`]
-              if (colorCell) {
-                colorCell.s = {
-                  fill: { fgColor: { rgb: 'D4E6F1' } },
-                  border: bottomBorderOnly,
-                }
-              }
-            }
-          }
+    // First pass: identify special rows
+    for (let row = range.s.r; row <= range.e.r; row++) {
+      const cellA = worksheet[XLSX.utils.encode_cell({ r: row, c: 0 })]
+      if (cellA && cellA.v) {
+        const cellValue = cellA.v.toString()
+        if (cellValue.startsWith('Subtotal -')) {
+          subtotalRows.add(row)
+        } else if (cellValue === 'GRAND TOTAL:') {
+          grandTotalRows.add(row)
         }
       }
-    })
+    }
+
+    // Second pass: apply styles
+    for (let row = range.s.r; row <= range.e.r; row++) {
+      for (let col = range.s.c; col <= range.e.c; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col })
+        const cell = worksheet[cellAddress]
+
+        if (!cell) continue
+
+        // Title row (row 0)
+        if (row === 0 && col === 0) {
+          cell.s = titleStyle
+        }
+        // Header row (row 8)
+        else if (row === 8) {
+          cell.s = headerStyle
+        }
+        // Subtotal rows - apply to entire row
+        else if (subtotalRows.has(row)) {
+          cell.s = subtotalStyle
+        }
+        // Grand total rows - apply to entire row
+        else if (grandTotalRows.has(row)) {
+          cell.s = grandTotalStyle
+        }
+        // Regular data rows
+        else if (row > 8 && cell.v !== undefined && cell.v !== '') {
+          cell.s = dataStyle
+        }
+      }
+    }
+
+    // Merge title cell across all columns
+    worksheet['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 2 } }]
 
     // Add worksheet to workbook
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Order')
@@ -504,7 +487,6 @@
     // Download the file
     XLSX.writeFile(workbook, filename)
   }
-
   // Custom search function for multi-word search
   const customSearch = (value: any, query: string, item?: any) => {
     if (query == null || query === '') return true
