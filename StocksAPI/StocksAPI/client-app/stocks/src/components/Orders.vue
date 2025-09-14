@@ -5,7 +5,6 @@
   import type ProductItem from '../models/ProductItem'
   import { ProductType, getProductTypeDisplayName } from '../models/ProductType'
   import type OrderItem from '../models/OrderItem'
-  import type Order from '../models/Order'
   import OrdersList from './OrdersList.vue'
   import { useAuth0 } from '@auth0/auth0-vue'
 

@@ -5,4 +5,12 @@ interface Order {
     createdBy: string | null
 }
 
-export type { Order as default }
+interface OrderRow {
+    productId: string
+    productName: string
+    category: string
+    colorCode: string
+    quantity: number
+}
+
+export type { Order, OrderRow }
