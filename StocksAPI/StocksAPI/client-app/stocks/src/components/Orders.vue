@@ -5,6 +5,8 @@
   import type ProductItem from '../models/ProductItem'
   import { ProductType, getProductTypeDisplayName } from '../models/ProductType'
   import type OrderItem from '../models/OrderItem'
+  import type Order from '../models/Order'
+  import OrdersList from './OrdersList.vue'
   import { useAuth0 } from '@auth0/auth0-vue'
 
   const { user } = useAuth0()
@@ -257,6 +259,11 @@
     clearOrderDialog.value = false
     showProducts.value = false
     showNotification('Order cleared', 'success')
+
+    // Refresh the orders list when going back
+    if (ordersListRef.value) {
+      ordersListRef.value.refreshOrders()
+    }
   }
 
   const closeClearOrderDialog = () => {
@@ -292,6 +299,11 @@
       showProducts.value = false
 
       showNotification('Order finalized successfully! Excel file downloaded.', 'success')
+
+      // Refresh the orders list when going back
+      if (ordersListRef.value) {
+        ordersListRef.value.refreshOrders()
+      }
     } catch (error: any) {
       console.error('Error finalizing order:', error)
       if (error.response?.status === 403) {
@@ -517,6 +529,25 @@
       fetchProducts()
     }
   })
+
+  // Add reference to OrdersList component
+  const ordersListRef = ref<InstanceType<typeof OrdersList> | null>(null)
+
+  // Add function to go back to orders list without clearing current order
+  const backToOrdersList = () => {
+    showProducts.value = false
+    // Don't clear orderItems, clientName, or localStorage - keep the order in progress
+
+    // Refresh the orders list
+    if (ordersListRef.value) {
+      ordersListRef.value.refreshOrders()
+    }
+  }
+
+  // Add function to handle notifications from OrdersList component
+  const handleNotification = (message: string, color: 'success' | 'error') => {
+    showNotification(message, color)
+  }
 </script>
 
 <template>
@@ -533,8 +564,39 @@
               </div>
             </div>
             <v-spacer></v-spacer>
-            <v-btn v-if="!showProducts" color="#021828" prepend-icon="mdi-plus" variant="elevated" @click="openOrder">
+            <!-- Show Back to Orders button when in products view -->
+            <v-btn
+              v-if="showProducts"
+              color="grey-darken-1"
+              prepend-icon="mdi-arrow-left"
+              variant="outlined"
+              @click="backToOrdersList"
+              class="me-2"
+            >
+              Back to Orders
+            </v-btn>
+
+            <!-- Show Open Order button when in orders list view -->
+            <v-btn
+              v-if="!showProducts && !clientName"
+              color="#021828"
+              prepend-icon="mdi-plus"
+              variant="elevated"
+              @click="openOrder"
+            >
               Open Order
+            </v-btn>
+
+            <!-- Show Continue Order button when there's an order in progress and in orders list view -->
+            <v-btn
+              v-if="!showProducts && clientName"
+              color="#DCC0A1"
+              prepend-icon="mdi-play"
+              variant="elevated"
+              @click="showProducts = true"
+              class="ms-2"
+            >
+              Continue Order
             </v-btn>
           </v-card-title>
 
@@ -644,12 +706,8 @@
             </v-data-table>
           </v-card-text>
 
-          <!-- Empty state when no order is open -->
-          <v-card-text v-if="!showProducts" class="text-center py-12">
-            <v-icon icon="mdi-clipboard-outline" size="64" color="grey-lighten-1" class="mb-4"></v-icon>
-            <h3 class="text-h6 text-grey-darken-1 mb-2">No Order Open</h3>
-            <p class="text-body-2 text-grey-darken-1">Click "Open Order" to start adding products to your order.</p>
-          </v-card-text>
+          <!-- Orders List View - replaces the empty state -->
+          <OrdersList v-if="!showProducts" ref="ordersListRef" @notification="handleNotification" />
         </v-card>
       </v-col>
     </v-row>
