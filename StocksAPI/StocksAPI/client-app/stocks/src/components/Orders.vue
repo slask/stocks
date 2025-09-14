@@ -822,7 +822,6 @@
             no-data-text="No items in order"
             items-per-page="10"
             density="compact"
-            hide-default-footer
           >
             <!-- Category slot with display name -->
             <template v-slot:item.category="{ item }">

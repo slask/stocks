@@ -21,6 +21,8 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Folder Include="Backoffice\ListOrders\" />
+        <Folder Include="Backoffice\OrderDetails\" />
         <Folder Include="Backoffice\SaveOrder\"/>
         <Folder Include="client-app\"/>
         <Folder Include="client-app\stocks\dist\"/>
