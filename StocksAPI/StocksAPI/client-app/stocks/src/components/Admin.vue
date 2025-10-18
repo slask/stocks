@@ -142,6 +142,27 @@
     }
   }
 
+  // Custom search function for multi-word search
+  const customSearch = (value: any, query: string, item?: any) => {
+    if (query == null || query === '') return true
+
+    const searchTerms = query
+      .toLowerCase()
+      .split(' ')
+      .filter(term => term.trim() !== '')
+    const searchText =
+      item?.columns.productName.toLowerCase() +
+        ' ' +
+        item?.columns.category.toLowerCase() +
+        ' ' +
+        item?.columns.colorCode?.toLowerCase() ||
+      value.toString().toLowerCase() ||
+      ''
+
+    // Return true if every search term matches
+    return searchTerms.every(term => searchText.includes(term))
+  }
+
   const getStockStatus = (stockCount: number) => {
     if (stockCount === 0) return { color: '#EB0E0E', text: 'Out of Stock' }
     if (stockCount < 10) return { color: 'orange', text: 'Low Stock' }
@@ -474,6 +495,7 @@
               :headers="headers"
               :items="products"
               :loading="loading"
+              :custom-filter="customSearch"
               class="elevation-1"
               loading-text="Loading products..."
               no-data-text="No products found"
